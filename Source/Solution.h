@@ -4,10 +4,11 @@
 class Solution{
 
   public :
-    Solution ();
+    Solution (int binWidth, int binHeight);
 
     int getFitness();
     int getNbBins();
+    int getTheoricalMininalNbBins();
 
 
     void addItemsInNewBin(Item item);
@@ -32,6 +33,8 @@ class Solution{
 
 
   protected :
+    int m_binWidth;
+    int m_binHeight;
 
     // <binId, item>;
     std::list<std::pair<int, Item>> m_items;

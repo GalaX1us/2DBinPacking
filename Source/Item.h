@@ -8,6 +8,7 @@ class Item{
     int getId();
     int getWidth();
     int getHeight();
+    int getArea();
     int getX();
     int getY();
     bool isRotated();

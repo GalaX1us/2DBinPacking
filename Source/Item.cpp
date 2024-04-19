@@ -30,6 +30,10 @@ int Item::getHeight(){
   return m_height;
 }
 
+int Item::getArea(){
+  return m_width * m_height;
+}
+
 int Item::getX(){
   return m_x;
 }
