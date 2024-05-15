@@ -1,5 +1,5 @@
 import numpy as np
-from structs import Item
+from genetic_algo.structures import Item
 from numba import njit, jit
 
 def custom_choice(indices, probs):

@@ -1,6 +1,6 @@
 import numpy as np
 from solutions_generation import generate_initial_population
-from structs import Item
+from genetic_algo.structures import Item
 
 
 # def genetic_algo(items, bin_dimensions, population_size, nb_generations, crossover_rate, kappa, delta):
