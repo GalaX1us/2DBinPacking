@@ -1,13 +1,12 @@
 import time
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import random
-from fitness import calculate_fitness
 from visualization import visualize_bins
 from structures import *
 from numba import njit
+from numba.typed import List
 
+@njit
 def remove_item_from_remaining(remaining, item_id):
     """
     Remove an item from the remaining items array based on its id.
@@ -24,6 +23,7 @@ def remove_item_from_remaining(remaining, item_id):
     
     return remaining
 
+@njit
 def spliting_process_guillotine(horizontal, bin, old_free_rect, item):
     """
     Perform the guillotine split process after placing an item in a bin.
@@ -73,6 +73,7 @@ def spliting_process_guillotine(horizontal, bin, old_free_rect, item):
     if changes == 0:
         remove_free_rect_from_bin(bin, old_free_rect)
 
+@njit
 def merge_rec_guillotine(bin):
     """
     Merge free rectangles in the bin that can be combined either horizontally or vertically.
@@ -114,10 +115,9 @@ def merge_rec_guillotine(bin):
                     remove_free_rect_from_bin_by_idx(bin, j)
                     i = 0
                     break
-        
-        
         i += 1
         
+@njit        
 def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
     """
     Check each item to see if it fits in the given gaps with or without rotation.
@@ -128,11 +128,11 @@ def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
     - vertical_gap (int): The height of the current free space.
 
     Returns:
-    - (np.ndarray): Best fitting item, if found.
+    - (int): The index of the selectioned item. -1 otherwise.
     - (bool): Whether the best fitting item needs to be rotated.
     """
     
-    best_fit_item = None
+    best_fit_item_idx = -1
     best_fit_rotated = False
     perfect_fit = False
     
@@ -151,13 +151,13 @@ def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
             if item_width <= horizontal_gap and item_height <= vertical_gap:
                 
                 # Store it if it's the first thatg we encounter
-                if not best_fit_item:
-                    best_fit_item = current_item
+                if best_fit_item_idx == -1:
+                    best_fit_item_idx = current_item['id']
                     best_fit_rotated = rotated
                 
                 # Check if it fits perfectly    
                 if current_gap - item_width == 0:
-                    best_fit_item = current_item
+                    best_fit_item_idx = current_item['id']
                     best_fit_rotated = rotated
                     perfect_fit = True
                     break
@@ -165,9 +165,9 @@ def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
         if perfect_fit:
             break
     
-    return best_fit_item, best_fit_rotated
+    return best_fit_item_idx, best_fit_rotated
 
-        
+@njit     
 def handle_wastage(bin, current_free_rect, current_y, vertical_gap):
     """
     Handle the situation where no items fit into the current free rectangle, potentially marking it as wasted.
@@ -200,15 +200,15 @@ def handle_wastage(bin, current_free_rect, current_y, vertical_gap):
         # Entire space is wasted, so remove it
         remove_free_rect_from_bin(bin, current_free_rect)
         
-        
+@njit
 def perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y):
     """
     Place the selected item into the bin, performing necessary updates to the free rectangles.
 
     Parameters:
-    - bin (np.ndarray): The bin where the item is being placed.
-    - current_free_rect (np.ndarray): The free rectangle where the item will be placed.
-    - best_fit_item (np.ndarray): The item to be placed.
+    - bin (Bin): The bin where the item is being placed.
+    - current_free_rect (FreeRectangle): The free rectangle where the item will be placed.
+    - best_fit_item (Item): The item to be placed.
     - best_fit_rotated (bool): Indicates if the item needs to be rotated for placement.
     - current_x (int): The horizontal starting point of the placement.
     - current_y (int): The vertical starting point of the placement.
@@ -217,8 +217,10 @@ def perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, c
     """
     
     if best_fit_rotated:
-        rotate_item(best_fit_item)
+        best_fit_item['width'], best_fit_item['height'] = best_fit_item['height'], best_fit_item['width']
+        best_fit_item['rotated'] = not best_fit_item['rotated']
 
+    
     add_item_to_bin(bin, best_fit_item, current_x, current_y)
 
     new_horizontal_gap = current_free_rect['width'] - best_fit_item['width']
@@ -229,38 +231,39 @@ def perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, c
     if new_horizontal_gap > 0 and new_vertical_gap > 0:
         merge_rec_guillotine(bin)
 
-
+@njit
 def insert_item_lgfi(bin, items):
     """
     Attempt to insert an item into the given bin by finding the best fitting position.
 
     Parameters:
-    - bin (np.ndarray): The bin to attempt item insertion.
-    - items (np.ndarray): List of items to be placed.
+    - bin (Bin): The bin to attempt item insertion.
+    - items (List(Item)): List of items to be placed.
 
     Returns:
     - (bool): Whether the insertion was successful.
-    - (np.ndarray): The item that was inserted.
+    - (int): The ID of the item that was inserted.
     """
     
     current_free_rect_idx = find_current_position_idx(bin)
     if current_free_rect_idx == -1:
-        return False, None
+        return False, -1
     
     current_free_rect = bin['list_of_free_rec'][current_free_rect_idx]
     current_x, current_y = current_free_rect['corner_x'], current_free_rect['corner_y']
     horizontal_gap, vertical_gap = current_free_rect['width'], current_free_rect['height']
     
-    best_fit_item, best_fit_rotated = check_fit_and_rotation(items, horizontal_gap, vertical_gap)
+    best_fit_item_idx, best_fit_rotated = check_fit_and_rotation(items, horizontal_gap, vertical_gap)
+    best_fit_item = get_item_by_id(items, best_fit_item_idx)
     
-    if not best_fit_item:
+    if best_fit_item['width'] == 0 or best_fit_item['height'] == 0:
         handle_wastage(bin, current_free_rect, current_y, vertical_gap)
-        return False, None
+        return False, -1
     
     perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y)
-    return True, best_fit_item
+    return True, best_fit_item['id']
 
-
+@njit
 def find_current_position_idx(bin):
     """
     Find the index of the bottom leftmost free rectangle for placement in the bin.
@@ -273,30 +276,23 @@ def find_current_position_idx(bin):
     """
     
     best_free_rect_idx = -1
-    best_free_rect = None
-    
+    lowest_y = np.inf
+    lowest_x = np.inf
+
     for i in range(len(bin['list_of_free_rec'])):
         rec = bin['list_of_free_rec'][i]
-        
-        # Check if the rectangle is valid (non-zero width implies it's still available for placement)
         if rec['width'] == 0:
-            break
-        
-        # Initialize best_free_rect if it's the first valid rectangle encountered
-        if best_free_rect is None:
-            best_free_rect = rec
-            best_free_rect_idx = i
             continue
         
-        # Update if the current rectangle is lower or at the same y but more to the left
-        if (rec['corner_y'] < best_free_rect['corner_y']) or \
-           (rec['corner_y'] == best_free_rect['corner_y'] and rec['corner_x'] < best_free_rect['corner_x']):
-            best_free_rect = rec
+        if best_free_rect_idx == -1 or rec['corner_y'] < lowest_y or \
+           (rec['corner_y'] == lowest_y and rec['corner_x'] < lowest_x):
+            lowest_y = rec['corner_y']
+            lowest_x = rec['corner_x']
             best_free_rect_idx = i
-    
+
     return best_free_rect_idx
 
-
+@njit
 def lgfi(items, bin_width, bin_height):
     """
     Main function to apply the Level Guillotine Fit Insertion algorithm to pack items into bins.
@@ -310,59 +306,59 @@ def lgfi(items, bin_width, bin_height):
     - list: A list of bins containing the packed items.
     """
     
-    bins = []
-    bin_id = 0
+    bins = List()
+    bin_count = 0
     unpacked_items = np.copy(items)
     
-    while len(unpacked_items) > 0:
+    while unpacked_items.size > 0:
         placed = False
         
         # Attempt to place an item in the existing bins
         for i in range(len(bins)):
             bin = bins[i]
-            placed, item = insert_item_lgfi(bin, unpacked_items)
+            placed, item_id = insert_item_lgfi(bin, unpacked_items)
+            
+            # Numba Lists use copies and not views like standard Python
+            bins[i] = bin
             
             # Remove the item from the remaining list if it has been placed
             if placed:
-                unpacked_items = remove_item_from_remaining(unpacked_items, item['id'])
+                unpacked_items = remove_item_from_remaining(unpacked_items, item_id)
                 break
             
         if not placed:
-            space_available = any(bin['list_of_free_rec'][0]['width'] != 0 for bin in bins)
-            if not space_available:
-
-                new_bin = create_bin(bin_id, bin_width, bin_height)
+            if bin_count == 0 or not np.any(np.array([bins[i]['list_of_free_rec'][0]['width'] != 0 for i in range(bin_count)], dtype=np.bool_)):
+                new_bin = create_bin(bin_count, bin_width, bin_height)
                 bins.append(new_bin)
-                bin_id += 1
-            
+                bin_count += 1
+                
     return bins
 
-def fitness(solution, bin_width, bin_height):
-    bins = lgfi(solution, bin_width, bin_height)
-    return len(bins)
-
 # Example usage
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    items = np.array([
-        create_item(1, 30, 20),
-        create_item(2, 50, 40), 
-        create_item(3, 60, 30),  
-        create_item(4, 50, 50),  
-        create_item(5, 10, 10),  
-        create_item(6, 20, 20),
-        create_item(7, 20, 20),  
-        create_item(8, 80, 80),
-        create_item(9, 80, 80)
-    ])
+#     items = np.array([
+#         create_item(1, 30, 20),
+#         create_item(2, 50, 40), 
+#         create_item(3, 60, 30),  
+#         create_item(4, 50, 50),  
+#         create_item(5, 10, 10),  
+#         create_item(6, 20, 20),
+#         create_item(7, 20, 20),  
+#         create_item(8, 80, 80),
+#         create_item(9, 80, 80)
+#     ])
     
-    # Define bin dimensions
-    bin_width = 100
-    bin_height = 100
     
-    start = time.perf_counter()
-    bins = lgfi(items, bin_width, bin_height)
-    print(time.perf_counter()-start)
+#     # Define bin dimensions
+#     bin_width = 100
+#     bin_height = 100
     
-    fit = calculate_fitness(bins)
-    print(fit) 
+#     bins = lgfi(items, bin_width, bin_height)
+    
+    
+#     start = time.perf_counter()
+#     bins = lgfi(items, bin_width, bin_height)
+#     print(time.perf_counter()-start)
+    
+#     visualize_bins(bins)
