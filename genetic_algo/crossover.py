@@ -1,6 +1,9 @@
 import numpy as np
+from fitness import compute_fitnesses
+from numba import njit, prange
+from solutions_generation import custom_choice
 
-def crossover(population: np.ndarray, crossover_rate: float, delta: float):
+def crossover(population: np.ndarray, bin_width:int, bin_height:int, crossover_rate: float, delta: float):
     """
     Perform crossover on a subset of the population P. Each solution in the
     subset is paired with another solution from P, and uniform order-based
@@ -8,6 +11,8 @@ def crossover(population: np.ndarray, crossover_rate: float, delta: float):
 
     Parameters:
     - population (np.ndarray): Array of individual solutions, each a permutation of item indices.
+    - bin_width (int): Width of the bin
+    - bin_height (int): Height of the bin
     - crossover_rate (float): Proportion of the population to undergo crossover.
     - delta (float): Exponent used to adjust selection probabilities based on fitness ranking.
 
@@ -16,39 +21,33 @@ def crossover(population: np.ndarray, crossover_rate: float, delta: float):
     """
     
     psize = len(population)
+    n = len(population[0])
+    
     num_crossover = int(crossover_rate * psize)
-    fitnesses = np.array([fitness(ind) for ind in population])
+    fitnesses = compute_fitnesses(population, bin_width, bin_height)
     
-    # Sorting indices by fitness
-    sorted_indices = np.argsort(fitnesses)
-    
-    # Selecting indices for crossover based on fitness
+    sorted_indices = np.argsort(-fitnesses)
     selected_indices = sorted_indices[:num_crossover]
-
-    # Compute selection probabilities for the entire population
-    ranks = np.argsort(sorted_indices)  
+    
+    ranks = np.argsort(sorted_indices)
     probabilities = (psize - ranks) ** delta
-    probabilities /= probabilities.sum() 
-
-    new_population = []
-
-    for idx in selected_indices:
+    probabilities /= probabilities.sum()
+    
+    new_population = np.empty((num_crossover, n), dtype=np.int32)
+    
+    for i in prange(num_crossover):
+        idx = selected_indices[i]
         parent1 = population[idx]
-        # Select a partner with probability bias towards better fitness
         partner_idx = np.random.choice(psize, p=probabilities)
-        
-        # Ensure both idx are different
-        while partner_idx==idx:
+        while partner_idx == idx:
             partner_idx = np.random.choice(psize, p=probabilities)
         
         parent2 = population[partner_idx]
+        new_population[i] = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
 
-        # Generate offspring using uniform order-based crossover
-        offspring = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
-        new_population.append(offspring)
+    return new_population
 
-    return np.array(new_population)
-
+@njit
 def offspring_generation(parent1, parent2, fitness1, fitness2):
     """
     Perform a order-based crossover between two parent solutions to generate an offspring.
@@ -78,7 +77,7 @@ def offspring_generation(parent1, parent2, fitness1, fitness2):
             used_items.add(parent1[k])
             
         else:
-            choice = np.random.choice([parent1[k], parent2[l]], p=[0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75])
+            choice = custom_choice([parent1[k], parent2[l]], p=[0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75])
             
             offspring[r] = choice
             used_items.add(choice)
