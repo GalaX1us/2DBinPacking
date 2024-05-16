@@ -7,19 +7,14 @@ def crossover(population: np.ndarray, crossover_rate: float, delta: float):
     crossover is performed to generate a new solution.
 
     Parameters:
-    -----------
-    P : list of np.ndarray
-        Population of solutions, each solution is a permutation of item indices.
-    crate : float
-        Crossover rate determining the fraction of the population to be selected for crossover.
-    delta : float
-        Determines the bias towards selecting better solutions as crossover partners.
+    - population (np.ndarray): Array of individual solutions, each a permutation of item indices.
+    - crossover_rate (float): Proportion of the population to undergo crossover.
+    - delta (float): Exponent used to adjust selection probabilities based on fitness ranking.
 
     Returns:
-    --------
-    list of np.ndarray
-        New population after crossover has been applied.
+    - np.ndarray: New population subset generated through crossover.
     """
+    
     psize = len(population)
     num_crossover = int(crossover_rate * psize)
     fitnesses = np.array([fitness(ind) for ind in population])
@@ -56,32 +51,20 @@ def crossover(population: np.ndarray, crossover_rate: float, delta: float):
 
 def offspring_generation(parent1, parent2, fitness1, fitness2):
     """
-    Perform a detailed order-based crossover between two parent solutions to generate an offspring.
+    Perform a order-based crossover between two parent solutions to generate an offspring.
     This crossover method starts by aligning two parent solutions, checks for identical items at corresponding
     positions, and directly transfers matching items to the offspring. Non-matching items are probabilistically 
     chosen based on parent fitness, favoring the item from the "better" parent. This process ensures diversity 
     while maintaining some degree of inheritance from both parents.
 
-    The method handles items already placed in the offspring to avoid duplicates, and dynamically adjusts pointers
-    to fill all positions of the offspring based on parent contributions. If an offspring proves to be more fit or
-    efficient than one of the parents (based on a fitness function and criteria such as load), it replaces the less 
-    fit parent in the new population.
-
     Parameters:
-    -----------
-    parent1 : np.ndarray
-        First parent solution, a permutation of item indices.
-    parent2 : np.ndarray
-        Second parent solution, a permutation of item indices.
-    fitness1 : float
-        Fitness score of the first parent; lower scores indicate better fitness.
-    fitness2 : float
-        Fitness score of the second parent; lower scores indicate better fitness.
+    - parent1 (np.ndarray): First parent permutation of item indices.
+    - parent2 (np.ndarray): Second parent permutation of item indices.
+    - fitness1 (float): Fitness score of the first parent.
+    - fitness2 (float): Fitness score of the second parent.
 
     Returns:
-    --------
-    np.ndarray
-        The offspring solution generated from the parents.
+    - np.ndarray: Offspring permutation of item indices.
     """
     
     n = len(parent1)

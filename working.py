@@ -1,180 +1,108 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+def insert_item_lgfi(bin, items):
+    perfect_fit = False
 
-class FreeRectangle:
-    def __init__(self, x, y, width, height):
-        self.corner_x = x
-        self.corner_y = y
-        self.width = width
-        self.height = height
-
-class Item:
-    def __init__(self, id, width, height, rotated=False):
-        self.id = id
-        self.width = width
-        self.height = height
-        self.rotated = rotated
-        self.pos_bin = -1
-        self.corner_x = 0
-        self.corner_y = 0
-
-class Bin:
-    def __init__(self, id, width, height):
-        self.id = id
-        self.width = width
-        self.height = height
-        self.items = []
-        self.list_of_free_rec = [FreeRectangle(0, 0, width, height)]
-
-def find_bottom_left_position(bin):
-    min_y = float('inf')
-    min_x = float('inf')
-    current_rec = None
-    current_pos = -1
-
-    for i, rec in enumerate(bin.list_of_free_rec):
-        if rec.corner_y < min_y or (rec.corner_y == min_y and rec.corner_x < min_x):
-            min_y = rec.corner_y
-            min_x = rec.corner_x
-            current_rec = rec
-            current_pos = i
-            
-    return current_rec, current_pos
-
-def calculate_gaps(bin, rec):
+    # Store the best fitting item
+    best_fit_item = None
     
-    # Horizontal gap
-    horizontal_gap = rec.width
-    for item in bin.items:
-        if item.corner_y <= rec.corner_y < item.corner_y + item.height:
-            if item.corner_x > rec.corner_x and item.corner_x < rec.corner_x + rec.width:
-                horizontal_gap = min(horizontal_gap, item.corner_x - rec.corner_x)
-    
-    # Vertical gap
-    vertical_gap = rec.height
-    for item in bin.items:
-        if item.corner_x <= rec.corner_x < item.corner_x + item.width:
-            if item.corner_y > rec.corner_y and item.corner_y < rec.corner_y + rec.height:
-                vertical_gap = min(vertical_gap, item.corner_y - rec.corner_y)
-    
-    return horizontal_gap, vertical_gap
+    # Keeps track if the best fitting item needs to be rotated
+    best_fit_rotated = False
 
-def add_item_to_bin(bin, item, rec, rotated):
-    if rotated:
-        item.width, item.height = item.height, item.width
-        item.rotated = True
+    # Find the bottom leftmost free rectangle
+    current_free_rect_idx = find_current_position_idx(bin)
+    if current_free_rect_idx == -1:
+        return False, best_fit_item
     
-    item.corner_x = rec.corner_x
-    item.corner_y = rec.corner_y
-    item.pos_bin = bin.id
-    bin.items.append(item)
+    current_free_rect = bin['list_of_free_rec'][current_free_rect_idx]
     
-    # Split the free rectangle
-    if rotated:
-        new_rec_1 = FreeRectangle(rec.corner_x + item.width, rec.corner_y, rec.width - item.width, rec.height)
-        new_rec_2 = FreeRectangle(rec.corner_x, rec.corner_y + item.height, item.width, rec.height - item.height)
-    else:
-        new_rec_1 = FreeRectangle(rec.corner_x + item.width, rec.corner_y, rec.width - item.width, rec.height)
-        new_rec_2 = FreeRectangle(rec.corner_x, rec.corner_y + item.height, rec.width, rec.height - item.height)
+    current_x, current_y = current_free_rect['corner_x'], current_free_rect['corner_y']
+    horizontal_gap, vertical_gap = current_free_rect['width'], current_free_rect['height']
     
-    bin.list_of_free_rec.append(new_rec_1)
-    bin.list_of_free_rec.append(new_rec_2)
-    
-    # Remove the used rectangle
-    bin.list_of_free_rec.remove(rec)
-
-def insert_item_into_bin(bin, item):
-    rec, pos = find_bottom_left_position(bin)
-    if rec is None:
-        return False
-
-    horizontal_gap, vertical_gap = calculate_gaps(bin, rec)
+    # Compute the smallest gap
     current_gap = min(horizontal_gap, vertical_gap)
     
-    fit = False
-    rotated = False
-
-    if current_gap == horizontal_gap:
-        if item.width <= current_gap and item.height <= rec.height:
-            fit = True
-        elif item.rotated and item.height <= current_gap and item.width <= rec.height:
-            fit = True
-            rotated = True
-    else:
-        if item.height <= current_gap and item.width <= rec.width:
-            fit = True
-        elif item.rotated and item.width <= current_gap and item.height <= rec.width:
-            fit = True
-            rotated = True
+    item_nb = len(items)
+      
+    for i in range(item_nb):
+        
+        # Stop the loop if we finds an item that perfectly fits in the smallest gap
+        if perfect_fit:
+            break
+        
+        current_item = items[i]
+        
+        # Since the rotation is allowed test both
+        for rotated in [False, True]:
+                        
+            item_width, item_height = current_item['width'], current_item['height']
+            
+            if rotated:
+                item_width, item_height = current_item['height'], current_item['width']
+            
+            # If an item fits in the gap
+            if item_width <= horizontal_gap and item_height <= vertical_gap:
+                
+                # Store it if it's the first thatg we encounter
+                if not best_fit_item:
+                    best_fit_item = current_item
+                    best_fit_rotated = rotated
+                
+                # Check if it fits perfectly    
+                if current_gap - item_width == 0:
+                    best_fit_item = current_item
+                    best_fit_rotated = rotated
+                    perfect_fit = True
+                    break
     
-    if fit:
-        add_item_to_bin(bin, item, rec, rotated)
-        return True
-    else:
-        # Handle wastage area
-        if current_gap == horizontal_gap:
-            wastage_height = rec.height
-            for existing_item in bin.items:
-                if existing_item.corner_y == rec.corner_y and existing_item.corner_x > rec.corner_x:
-                    wastage_height = min(wastage_height, existing_item.height)
-            wastage_area = FreeRectangle(rec.corner_x, rec.corner_y, current_gap, wastage_height)
-        else:
-            wastage_width = rec.width
-            for existing_item in bin.items:
-                if existing_item.corner_x == rec.corner_x and existing_item.corner_y > rec.corner_y:
-                    wastage_width = min(wastage_width, existing_item.width)
-            wastage_area = FreeRectangle(rec.corner_x, rec.corner_y, wastage_width, current_gap)
-
-        bin.list_of_free_rec.append(wastage_area)
-        bin.list_of_free_rec.remove(rec)
-        return False
-
-def solve_guillotine(items, bins):
-    for item in items:
-        placed = False
-        for bin in bins:
-            if insert_item_into_bin(bin, item):
-                placed = True
+    # If no items fits in, we need to declare part of this area as wasted                
+    if best_fit_item is None:
+        
+        wastage_height = vertical_gap
+        
+        # Find the upper edge of the lowest neighboring item
+        for i in range(len(bin['items'])):
+                        
+            current_item = bin['items'][i]
+            
+            if current_item['width'] == 0:
                 break
-        if not placed:
-            new_bin = Bin(len(bins), bins[0].width, bins[0].height)
-            bins.append(new_bin)
-            insert_item_into_bin(new_bin, item)
-
-def visualize_bins(bins):
-    fig, ax = plt.subplots(len(bins), 1, figsize=(10, 5 * len(bins)))
+            
+            if current_item['corner_y'] + current_item['height'] > current_y:
+                wastage_height = min(wastage_height, current_item['corner_y'] + current_item['height'] - current_y)
+        
+        
+        # Add the other part that is not wasted
+        if wastage_height < vertical_gap:
+            current_free_rect['corner_x'] = current_x
+            current_free_rect['corner_y'] = current_y+wastage_height    
+            current_free_rect['width'] = horizontal_gap
+            current_free_rect['height'] = vertical_gap-wastage_height
+            
+            merge_rec_guillotine(bin)
+        
+        # Remove it if everything is wasted
+        else:
+            remove_free_rect_from_bin(bin, current_free_rect)
+        
+        return False, best_fit_item
     
-    if len(bins) == 1:
-        ax = [ax]
-
-    for bin_index, bin in enumerate(bins):
-        ax[bin_index].set_xlim(0, bin.width)
-        ax[bin_index].set_ylim(0, bin.height)
-        ax[bin_index].set_title(f'Bin {bin.id}')
-        ax[bin_index].set_aspect('equal')
+    
+    if best_fit_rotated:
+        rotate_item(best_fit_item)
         
-        # Draw the bin border
-        bin_border = patches.Rectangle((0, 0), bin.width, bin.height, edgecolor='black', facecolor='none')
-        ax[bin_index].add_patch(bin_border)
-        
-        # Draw the items
-        for item in bin.items:
-            rect = patches.Rectangle((item.corner_x, item.corner_y), item.width, item.height, 
-                                     edgecolor='blue', facecolor='lightblue')
-            ax[bin_index].add_patch(rect)
-            rx, ry = rect.get_xy()
-            cx = rx + rect.get_width() / 2.0
-            cy = ry + rect.get_height() / 2.0
-            ax[bin_index].annotate(f'ID {item.id}', (cx, cy), color='black', weight='bold', 
-                                   fontsize=8, ha='center', va='center')
-
-    plt.tight_layout()
-    plt.show()
-
-# Example usage
-bins = [Bin(i, 100, 100) for i in range(5)]
-items = [Item(i, np.random.randint(10, 50), np.random.randint(10, 50), rotated=True) for i in range(20)]
-
-solve_guillotine(items, bins)
-visualize_bins(bins)
+    add_item_to_bin(bin, best_fit_item, current_x, current_y)
+    
+    # Should the guillotine cut be vertical or horizontal
+    # Shorter Leftover are prioritized
+    new_horizontal_gap = horizontal_gap - best_fit_item['width']
+    new_vertical_gap = vertical_gap - best_fit_item['height']
+    
+    guillotine_horizontal = True if new_horizontal_gap < new_vertical_gap else False
+    
+    # It removes the old free space at the end
+    spliting_process_guillotine(guillotine_horizontal, bin, current_free_rect, best_fit_item)
+    
+    # No need to do the guillotine process if the item perfectly fits the free space
+    if new_horizontal_gap > 0 and new_vertical_gap > 0:
+        merge_rec_guillotine(bin)
+    
+    return True, best_fit_item
