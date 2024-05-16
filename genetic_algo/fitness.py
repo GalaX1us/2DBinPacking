@@ -1,5 +1,10 @@
 import numpy as np
+from numba import njit, prange
 
+from lgfi import lgfi
+from solutions_generation import get_corresponding_sequence_by_id
+
+@njit
 def calculate_bin_fill(bin):
     """
     Calculate the total fill of a bin based on the items placed in it.
@@ -21,7 +26,8 @@ def calculate_bin_fill(bin):
         
     return total_fill
 
-def compute_fitness(bins, k=2):
+@njit
+def compute_fitness(bins, capacity, k=2):
     """
     Calculate the fitness of a bin packing solution.
 
@@ -35,9 +41,22 @@ def compute_fitness(bins, k=2):
     """
     n = len(bins)
     if n == 0:
-        return 0
-    
-    fills = np.array([calculate_bin_fill(bin) / ( bin['width']*bin['height']) for bin in bins])
-    fitness_value = np.sum(fills**k) / n
-    
-    return fitness_value
+        return 0.0 
+
+    total_fitness = 0
+    for i in range(n):
+        fill_ratio = calculate_bin_fill(bins[i]) / capacity
+        total_fitness = total_fitness + fill_ratio ** k
+
+    return total_fitness / n
+
+@njit(parallel=True)
+def compute_fitnesses(population, bin_width, bin_height):
+    fitnesses = np.zeros(len(population))
+    for i in prange(len(population)):
+        
+        sequence = get_corresponding_sequence_by_id(population[i])
+        solution = lgfi(sequence, bin_width, bin_height)
+        fitnesses[i] = compute_fitness(solution, bin_width*bin_height)
+        
+    return fitnesses
