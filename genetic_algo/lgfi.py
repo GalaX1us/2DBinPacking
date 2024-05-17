@@ -1,12 +1,9 @@
 import time
-import numpy as np
-import random
-from visualization import visualize_bins
-from structures import *
+from genetic_algo.structures import *
 from numba import njit
 from numba.typed import List
 
-@njit
+@njit(cache = True)
 def remove_item_from_remaining(remaining, item_id):
     """
     Remove an item from the remaining items array based on its id.
@@ -23,7 +20,7 @@ def remove_item_from_remaining(remaining, item_id):
     
     return remaining
 
-@njit
+@njit(cache = True)
 def spliting_process_guillotine(horizontal, bin, old_free_rect, item):
     """
     Perform the guillotine split process after placing an item in a bin.
@@ -73,7 +70,7 @@ def spliting_process_guillotine(horizontal, bin, old_free_rect, item):
     if changes == 0:
         remove_free_rect_from_bin(bin, old_free_rect)
 
-@njit
+@njit(cache = True)
 def merge_rec_guillotine(bin):
     """
     Merge free rectangles in the bin that can be combined either horizontally or vertically.
@@ -116,8 +113,8 @@ def merge_rec_guillotine(bin):
                     i = 0
                     break
         i += 1
-        
-@njit        
+
+@njit(cache = True)
 def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
     """
     Check each item to see if it fits in the given gaps with or without rotation.
@@ -167,7 +164,7 @@ def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
     
     return best_fit_item_idx, best_fit_rotated
 
-@njit     
+@njit(cache = True)
 def handle_wastage(bin, current_free_rect, current_y, vertical_gap):
     """
     Handle the situation where no items fit into the current free rectangle, potentially marking it as wasted.
@@ -199,8 +196,8 @@ def handle_wastage(bin, current_free_rect, current_y, vertical_gap):
     else:
         # Entire space is wasted, so remove it
         remove_free_rect_from_bin(bin, current_free_rect)
-        
-@njit
+
+@njit(cache = True) 
 def perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y):
     """
     Place the selected item into the bin, performing necessary updates to the free rectangles.
@@ -231,7 +228,7 @@ def perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, c
     if new_horizontal_gap > 0 and new_vertical_gap > 0:
         merge_rec_guillotine(bin)
 
-@njit
+@njit(cache = True)
 def insert_item_lgfi(bin, items):
     """
     Attempt to insert an item into the given bin by finding the best fitting position.
@@ -263,7 +260,7 @@ def insert_item_lgfi(bin, items):
     perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y)
     return True, best_fit_item['id']
 
-@njit
+@njit(cache = True)
 def find_current_position_idx(bin):
     """
     Find the index of the bottom leftmost free rectangle for placement in the bin.
@@ -292,7 +289,7 @@ def find_current_position_idx(bin):
 
     return best_free_rect_idx
 
-@njit
+@njit(cache = True)
 def lgfi(items, bin_width, bin_height):
     """
     Main function to apply the Level Guillotine Fit Insertion algorithm to pack items into bins.
@@ -333,32 +330,4 @@ def lgfi(items, bin_width, bin_height):
                 bin_count += 1
                 
     return bins
-
-# Example usage
-# if __name__ == "__main__":
     
-#     items = np.array([
-#         create_item(1, 30, 20),
-#         create_item(2, 50, 40), 
-#         create_item(3, 60, 30),  
-#         create_item(4, 50, 50),  
-#         create_item(5, 10, 10),  
-#         create_item(6, 20, 20),
-#         create_item(7, 20, 20),  
-#         create_item(8, 80, 80),
-#         create_item(9, 80, 80)
-#     ])
-    
-    
-#     # Define bin dimensions
-#     bin_width = 100
-#     bin_height = 100
-    
-#     bins = lgfi(items, bin_width, bin_height)
-    
-    
-#     start = time.perf_counter()
-#     bins = lgfi(items, bin_width, bin_height)
-#     print(time.perf_counter()-start)
-    
-#     visualize_bins(bins)

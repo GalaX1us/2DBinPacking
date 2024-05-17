@@ -1,8 +1,6 @@
-import numpy as np
-from structures import Item
-from numba import njit
+from genetic_algo.structures import *
 
-@njit
+@njit(cache = True)
 def custom_choice(indices, p):
     cumulative_probs = np.cumsum(p)
     rnd = np.random.random() * cumulative_probs[-1]
@@ -13,7 +11,7 @@ def custom_choice(indices, p):
         idx += 1
     return indices[-1]  
 
-@njit
+@njit(cache = True)
 def remove_index(indices, chosen_index):
     new_indices = np.empty(indices.shape[0] - 1, dtype=indices.dtype)
     j = 0
@@ -23,7 +21,7 @@ def remove_index(indices, chosen_index):
             j += 1
     return new_indices
 
-@njit
+@njit(cache = True)
 def generate_population(items, psize, kappa):
     """
     Generate a population of solutions using a probabilistic method based on the 
@@ -92,7 +90,7 @@ def generate_population(items, psize, kappa):
         
     return population
 
-@njit
+@njit(cache = True, nogil = True)
 def get_corresponding_sequence_by_id(items, id_ordering):
     """
     Create an array of items based on the provided ordering of item IDs.
@@ -104,15 +102,16 @@ def get_corresponding_sequence_by_id(items, id_ordering):
     Returns:
     - np.ndarray: An array of items reordered according to the specified ID ordering.
     """
-    # Create a copy of the items array to avoid modifying the original
-    items_copy = items.copy()
+    
+    # Initialize an empty array for the ordered items with the same type as items
+    ordered_items = np.empty(len(items), dtype=Item)
 
-    # Create a mapping from item IDs to their indices
-    id_to_index = {item['id']: idx for idx, item in enumerate(items_copy)}
+    # Create a mapping from item IDs to their indices in the original items array
+    id_to_index = {item['id']: i for i, item in enumerate(items)}
 
-    # Translate id_ordering into indices using the mapping
-    indices = [id_to_index[id_] for id_ in id_ordering if id_ in id_to_index]
+    # Fill the ordered_items array by mapping each id in id_ordering to the corresponding item
+    for idx, item_id in enumerate(id_ordering):
+        if item_id in id_to_index:
+            ordered_items[idx] = items[id_to_index[item_id]]
 
-    # Use the indices to reorder the copied items
-    ordered_items = items_copy[np.array(indices)]
     return ordered_items

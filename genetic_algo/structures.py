@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import jit, njit
 
 Item = np.dtype([
     ('id', np.int32), 
@@ -25,7 +25,7 @@ Bin = np.dtype([
     ('list_of_free_rec', FreeRectangle, (50,)) 
 ])
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True) 
 def create_bin(bin_id, width, height):
     bin = np.zeros(1, dtype=Bin)[0]
     bin['id'] = bin_id
@@ -37,8 +37,8 @@ def create_bin(bin_id, width, height):
     bin['list_of_free_rec'][0]['height'] = height
     return bin
 
-@njit
-def create_free_rectangle(x, y, width, height, wasted = False):
+@njit(cache = True, fastmath = True, nogil = True)
+def create_free_rectangle(x, y, width, height):
     rect = np.zeros(1, dtype=FreeRectangle)[0]
     rect['corner_x'] = x
     rect['corner_y'] = y
@@ -46,22 +46,19 @@ def create_free_rectangle(x, y, width, height, wasted = False):
     rect['height'] = height
     return rect
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def create_item(id, width, height, rotated = False):
     item = np.zeros(1, dtype=Item)[0]
     item['id'] = id
     item['width'] = width
     item['height'] = height
-    item['rotated'] = False
+    item['rotated'] = rotated
     item['corner_x'] = -1
     item['corner_y'] = -1
-    
-    if rotated:
-        item['width'], item['height'] = item['height'], item['width']
-        item['rotated'] = not item['rotated']
+
     return item
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def add_item_to_bin(bin, item, x, y):
     items = bin['items']
     for i in range(len(items)):
@@ -75,7 +72,7 @@ def add_item_to_bin(bin, item, x, y):
         
     return False  # No empty spot available
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def add_free_rect_to_bin(bin, free_rect):
     free_rects = bin['list_of_free_rec']
     for i in range(len(free_rects)):
@@ -87,7 +84,7 @@ def add_free_rect_to_bin(bin, free_rect):
             return True
     return False  # No empty spot available
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def remove_free_rect_from_bin(bin, free_rect):
     free_rects = bin['list_of_free_rec']
     for i in range(len(free_rects)):
@@ -105,7 +102,7 @@ def remove_free_rect_from_bin(bin, free_rect):
             return True
     return False  # Free rectangle not found
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def remove_free_rect_from_bin_by_idx(bin, idx):
     free_rects = bin['list_of_free_rec']
     
@@ -116,7 +113,7 @@ def remove_free_rect_from_bin_by_idx(bin, idx):
     free_rects[-1]['corner_x'] = 0
     free_rects[-1]['corner_y'] = 0
 
-@njit
+@njit(cache = True, fastmath = True, nogil = True)
 def get_item_by_id(items, id):
     item = np.zeros(1, dtype=Item)[0]
     
