@@ -66,7 +66,7 @@ def visualize_bins(bins):
         
         ax[row_index, col_index].set_xlim(0, bin['width'])
         ax[row_index, col_index].set_ylim(0, bin['height'])
-        ax[row_index, col_index].set_title(f'Bin {bin["id"]}')
+        ax[row_index, col_index].set_title(f'Bin {bin["id"]+1}')
         ax[row_index, col_index].set_aspect('equal')
         
         # Draw the bin border
