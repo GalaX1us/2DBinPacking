@@ -1,5 +1,6 @@
 import time
 from typing import Tuple
+from genetic_algo.mutation import mutation
 from genetic_algo.solutions_generation import *
 from genetic_algo.crossover import crossover
 from genetic_algo.structures import *
@@ -11,6 +12,7 @@ def genetic_algo(items: np.ndarray,
                  population_size: int,
                  nb_generations: int,
                  crossover_rate: float,
+                 mutation_rate: float,
                  kappa: float,
                  delta: float) -> Tuple[np.ndarray, float]:
     """
@@ -22,6 +24,7 @@ def genetic_algo(items: np.ndarray,
     - population_size (int): The size of the population in each generation.
     - nb_generations (int): The number of generations to run the genetic algorithm.
     - crossover_rate (float): The probability of crossover between two parents.
+    - mutation (float): The probability of mutation of an individual.
     - kappa (float): Parameter controlling the probability distribution in generating solutions.
     - delta (float): Parameter controlling the randomness in crossover.
 
@@ -49,9 +52,12 @@ def genetic_algo(items: np.ndarray,
             best_fitness = current_best_fitness
             best_solution[:] = population[best_index]
         
+        
         crossover_population = crossover(population, fitnesses, crossover_rate, delta)
         remaining_population = generate_population(items, population_size - crossover_population.shape[0] ,kappa)
         population = np.concatenate([crossover_population, remaining_population])
+        
+        # population = mutation(population, mutation_rate)
         
     return best_solution, best_fitness 
 

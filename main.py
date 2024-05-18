@@ -9,18 +9,23 @@ import time
 INPUT_DATA_DIRECTORY = "Data"
 OUTPUT_DATA_DIRECTORY = "Data/Solutions"
 
-POPULATION_SIZE = 150
-NB_GENERATIONS = 70
+POPULATION_SIZE = 500
+NB_GENERATIONS = 50
 CROSSOVER_RATE = 0.7
-KAPPA = 1
-DELTA = 1
+MUTATION_RATE = 0.1
+KAPPA = 5 # Must be >= 1
+DELTA = 5 # Must be >= 1
 
 if __name__ == "__main__":
 
     
-    # ====================== Generate Solutions ======================
+    # ====================== Compile code ======================
+    # You should first execute this single line to compile everything and cache the compiled code
+    # This allows future compilations time to be waaaaaaay faster
     
-    compile_everything()
+    # compile_everything()
+    
+    # ====================== Generate Solutions ======================
 
     for filename in os.listdir(INPUT_DATA_DIRECTORY):
         if filename.endswith(".bp2d"):
@@ -34,6 +39,7 @@ if __name__ == "__main__":
                                                     population_size=POPULATION_SIZE,
                                                     nb_generations=NB_GENERATIONS,
                                                     crossover_rate=CROSSOVER_RATE,
+                                                    mutation_rate=MUTATION_RATE,
                                                     kappa=KAPPA,
                                                     delta=DELTA)
             
@@ -53,6 +59,6 @@ if __name__ == "__main__":
     
     # ====================== Visualize Solutions ======================
            
-    # solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, "binpacking2d-13" + "-solution.bp2d") 
+    # solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, "binpacking2d-04" + "-solution.bp2d") 
     # bins = import_solution_from_json(solution_file_path)
     # visualize_bins(bins)
