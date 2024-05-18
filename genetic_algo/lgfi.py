@@ -85,6 +85,8 @@ def merge_rec_guillotine(bin):
     i = 0
 
     while i < len(free_rects) and free_rects[i]['width'] > 0:
+
+        merged = False
         first = free_rects[i] 
         
         # Try to find a rectangle that can be merged with 'first'
@@ -97,22 +99,44 @@ def merge_rec_guillotine(bin):
             
             # Check for vertical merge
             if first['width'] == second['width'] and first['corner_x'] == second['corner_x']:
-                if (first['corner_y'] + first['height'] == second['corner_y']) or (second['corner_y'] + second['height'] == first['corner_y']) :
-                    
+    
+                # If the first is BELOW the second
+                if (first['corner_y'] + first['height'] == second['corner_y']):
                     first['height'] += second['height']
                     remove_free_rect_from_bin_by_idx(bin, j)
-                    i = 0
+                    merged = True
+                    break
+                
+                # If the first is ABOVE the second
+                if (second['corner_y'] + second['height'] == first['corner_y']):
+                    second['height'] += first['height']
+                    remove_free_rect_from_bin_by_idx(bin, i)
+                    merged = True
                     break
             
             # Check for horizontal merge
-            if first['height'] == second['height'] and first['corner_y'] == second['corner_y']:
-                if (first['corner_x'] + first['width'] == second['corner_x']) or (second['corner_x'] + second['width'] == first['corner_x']):
+            # Disabled atm because it breaks the guillotine rule
+            
+            # if first['height'] == second['height'] and first['corner_y'] == second['corner_y']:
+                
+            #     # If the first is at the LEFT of the second
+            #     if (first['corner_x'] + first['width'] == second['corner_x']):
+                    
+            #         first['width'] += second['width']
+            #         remove_free_rect_from_bin_by_idx(bin, j)
+            #         merged = True
+            #         break
+                
+            #     # If the first is at the RIGTH of the second
+            #     if (second['corner_x'] + second['width'] == first['corner_x']):
 
-                    first['width'] += second['width']
-                    remove_free_rect_from_bin_by_idx(bin, j)
-                    i = 0
-                    break
-        i += 1
+            #         second['width'] += first['width']
+            #         remove_free_rect_from_bin_by_idx(bin, i)
+            #         merged = True
+            #         break
+        
+        # Start all over again if we merged something
+        i = 0 if merged else i+1
 
 @njit(cache = True)
 def check_fit_and_rotation(items, horizontal_gap, vertical_gap):
