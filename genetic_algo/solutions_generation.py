@@ -1,7 +1,18 @@
 from genetic_algo.structures import *
 
 @njit(cache = True)
-def custom_choice(indices, p):
+def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
+    """
+    Perform a probabilistic selection from a list of indices based on provided probabilities.
+
+    Parameters:
+    - indices (np.ndarray): Array of indices to choose from.
+    - p (np.ndarray): Array of probabilities corresponding to each index.
+
+    Returns:
+    - int: Selected index based on the provided probabilities.
+    """
+    
     cumulative_probs = np.cumsum(p)
     rnd = np.random.random() * cumulative_probs[-1]
     idx = 0
@@ -12,8 +23,18 @@ def custom_choice(indices, p):
     return indices[-1]  
 
 @njit(cache = True)
-def remove_index(indices, chosen_index):
-    new_indices = np.empty(indices.shape[0] - 1, dtype=indices.dtype)
+def remove_index(indices: np.ndarray, chosen_index: int) -> np.ndarray:
+    """
+    Remove a chosen index from an array of indices.
+
+    Parameters:
+    - indices (np.ndarray): Array of indices.
+    - chosen_index (int): The index to be removed.
+
+    Returns:
+    - np.ndarray: New array with the chosen index removed.
+    """
+    new_indices = np.empty(len(indices) - 1, dtype=indices.dtype)
     j = 0
     for i in range(indices.shape[0]):
         if indices[i] != chosen_index:
@@ -22,7 +43,7 @@ def remove_index(indices, chosen_index):
     return new_indices
 
 @njit(cache = True)
-def generate_population(items, psize, kappa):
+def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.ndarray:
     """
     Generate a population of solutions using a probabilistic method based on the 
     deterministic sequence of items sorted by non-increasing area.
@@ -32,26 +53,19 @@ def generate_population(items, psize, kappa):
     deterministic sequence, adjusted by the kappa parameter.
 
     Parameters:
-    -----------
-    items : np.ndarray
-        An array of structured dtype Items. This structured array is used to compute the 
-        area and sort items for the deterministic sequence.
-    psize : int
-        The size of the population to generate. This specifies the number of individual
-        solutions in the population.
-    kappa : int or float
-        A parameter that influences the selection probability of each item. Higher values
-        make the selection probability closer to the deterministic sequence order. The
-        influence is calculated as (n - position)^kappa, where position is the index of an
-        item in the sorted deterministic sequence.
+    - items (np.ndarray): Array of structured dtype Items. This structured array is used to compute the 
+                          area and sort items for the deterministic sequence.
+    - psize (int): The size of the population to generate. This specifies the number of individual
+                   solutions in the population.
+    - kappa (np.float32): A parameter that influences the selection probability of each item. Higher values
+                            make the selection probability closer to the deterministic sequence order. The
+                            influence is calculated as (n - position)^kappa, where position is the index of an
+                            item in the sorted deterministic sequence.
 
     Returns:
-    --------
-    np.ndarray
-        A numpy array containing the generated population. Each element of the array is
-        an array itself, representing a single solution composed of selected items indices based
-        on the described probabilistic mechanism.
-
+    - np.ndarray: A numpy array containing the generated population. Each element of the array is
+                  an array itself, representing a single solution composed of selected items indices based
+                  on the described probabilistic mechanism.
     """
     
     # Sorting by non-increasing area
@@ -90,14 +104,14 @@ def generate_population(items, psize, kappa):
         
     return population
 
-@njit(cache = True, nogil = True)
-def get_corresponding_sequence_by_id(items, id_ordering):
+@njit(cache = True)
+def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray) -> np.ndarray:
     """
     Create an array of items based on the provided ordering of item IDs.
 
     Parameters:
     - items (np.ndarray): Array of items to be reordered.
-    - id_ordering (list or np.ndarray): Sequence of item IDs representing the desired order of items.
+    - id_ordering (np.ndarray): Sequence of item IDs representing the desired order of items.
 
     Returns:
     - np.ndarray: An array of items reordered according to the specified ID ordering.

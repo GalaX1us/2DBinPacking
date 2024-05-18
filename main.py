@@ -1,4 +1,3 @@
-import numba
 from data_manager import load_items_from_file, export_solutions_to_json, import_solution_from_json
 from genetic_algo.gen_algo import genetic_algo, compile_everything
 from genetic_algo.lgfi import lgfi
@@ -7,43 +6,53 @@ from genetic_algo.visualization import visualize_bins
 import os
 import time
 
-input_data_directory = "Data"
-output_data_directory = "Data/Solutions"
+INPUT_DATA_DIRECTORY = "Data"
+OUTPUT_DATA_DIRECTORY = "Data/Solutions"
 
-population_size = 100
-nb_generations = 50
-crossover_rate = 0.7
-kappa = 1
-delta = 1
+POPULATION_SIZE = 150
+NB_GENERATIONS = 70
+CROSSOVER_RATE = 0.7
+KAPPA = 1
+DELTA = 1
 
 if __name__ == "__main__":
 
-    s = time.perf_counter()
+    
+    # ====================== Generate Solutions ======================
+    
     compile_everything()
-    print(f"Compilation took : {time.perf_counter() - s:.1f} sec")
 
-    for filename in os.listdir(input_data_directory):
+    for filename in os.listdir(INPUT_DATA_DIRECTORY):
         if filename.endswith(".bp2d"):
-            full_path = os.path.join(input_data_directory, filename)
+            full_path = os.path.join(INPUT_DATA_DIRECTORY, filename)
             
             bin_width, bin_height, items = load_items_from_file(full_path)
             
+            start = time.perf_counter()
             best_solution, best_fitness = genetic_algo(items = items,
                                                     bin_dimensions=(bin_width, bin_height),
-                                                    population_size=population_size,
-                                                    nb_generations=nb_generations,
-                                                    crossover_rate=crossover_rate,
-                                                    kappa=kappa,
-                                                    delta=delta)
+                                                    population_size=POPULATION_SIZE,
+                                                    nb_generations=NB_GENERATIONS,
+                                                    crossover_rate=CROSSOVER_RATE,
+                                                    kappa=KAPPA,
+                                                    delta=DELTA)
             
-            solution = lgfi(get_corresponding_sequence_by_id(items, best_solution), bin_width=bin_width, bin_height=bin_height)
+            ordered_items = get_corresponding_sequence_by_id(items, best_solution)
+            solution = lgfi(ordered_items, bin_width=bin_width, bin_height=bin_height)
+            time_elapsed = time.perf_counter() - start
             
-            solution_file_path = os.path.join(output_data_directory, filename.split('.')[0] + "-solution.bp2d") 
+            solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, filename.split('.')[0] + "-solution.bp2d") 
             export_solutions_to_json(solution, solution_file_path)
-                    
-            print(f"Processed {filename}")
+            
+            print(f"===================== {filename} =====================")
+            print(f"Bin dimensions: {bin_width}x{bin_height}")
+            print(f"Number of items: {len(items)}")
+            print(f"Time elapsed: {time_elapsed:.1f} seconds")
+            print(f"Best solution: {len(solution)} bins")
+            print(f"Solution saved to: {solution_file_path}\n")
     
-    
-    # solution_file_path = os.path.join(output_data_directory, "binpacking2d-01" + "-solution.bp2d") 
+    # ====================== Visualize Solutions ======================
+           
+    # solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, "binpacking2d-13" + "-solution.bp2d") 
     # bins = import_solution_from_json(solution_file_path)
     # visualize_bins(bins)
