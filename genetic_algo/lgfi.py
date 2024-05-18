@@ -282,7 +282,7 @@ def insert_item_lgfi(bin, items):
         return False, -1
     
     perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y)
-    return True, best_fit_item['id']
+    return best_fit_item_id
 
 @njit(cache = True)
 def find_current_position_idx(bin):
