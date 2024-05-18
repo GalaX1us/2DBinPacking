@@ -1,0 +1,110 @@
+[
+    {
+        "id": 0,
+        "width": 250,
+        "height": 250,
+        "items": [
+            {
+                "id": 10,
+                "width": 69,
+                "height": 165,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            },
+            {
+                "id": 3,
+                "width": 167,
+                "height": 152,
+                "rotated": false,
+                "corner_x": 69,
+                "corner_y": 0
+            },
+            {
+                "id": 9,
+                "width": 141,
+                "height": 87,
+                "rotated": true,
+                "corner_x": 69,
+                "corner_y": 152
+            }
+        ]
+    },
+    {
+        "id": 1,
+        "width": 250,
+        "height": 250,
+        "items": [
+            {
+                "id": 1,
+                "width": 167,
+                "height": 184,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            },
+            {
+                "id": 4,
+                "width": 83,
+                "height": 140,
+                "rotated": false,
+                "corner_x": 167,
+                "corner_y": 0
+            },
+            {
+                "id": 5,
+                "width": 70,
+                "height": 86,
+                "rotated": false,
+                "corner_x": 167,
+                "corner_y": 140
+            },
+            {
+                "id": 8,
+                "width": 148,
+                "height": 66,
+                "rotated": true,
+                "corner_x": 0,
+                "corner_y": 184
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "width": 250,
+        "height": 250,
+        "items": [
+            {
+                "id": 7,
+                "width": 120,
+                "height": 160,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            },
+            {
+                "id": 2,
+                "width": 114,
+                "height": 118,
+                "rotated": false,
+                "corner_x": 120,
+                "corner_y": 0
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "width": 250,
+        "height": 250,
+        "items": [
+            {
+                "id": 6,
+                "width": 143,
+                "height": 166,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            }
+        ]
+    }
+]
