@@ -23,20 +23,13 @@ def remove_item_from_remaining(remaining: np.ndarray, item_id: int) -> np.ndarra
 def spliting_process_guillotine(horizontal: bool, bin: np.ndarray, old_free_rect: np.ndarray, item: np.ndarray) -> None:
     """
     Perform the guillotine split process after placing an item in a bin.
-    
-    The direction of the cut (horizontal or vertical) is influenced by the remaining space dimensions:
-    - A horizontal cut may be made if the space above the item is less restrictive 
-      for future placements than the space to the right.
-    - A vertical cut might be preferred if the remaining space to the right of 
-      the item offers less flexibility than the space above.
+    Changes the structure of free rectangles within the bin based on where the item was placed.
 
     Parameters:
     - horizontal (bool): Determines if the guillotine cut should be horizontal.
     - bin (np.ndarray): The bin where the item is placed.
     - old_free_rect (np.ndarray): The free rectangle where the item is placed.
     - item (np.ndarray): The item that is placed in the bin.
-
-    Changes the structure of free rectangles within the bin based on where the item was placed.
     """
     
     changes = 0
@@ -68,72 +61,6 @@ def spliting_process_guillotine(horizontal: bool, bin: np.ndarray, old_free_rect
         
     if changes == 0:
         remove_free_rect_from_bin(bin, old_free_rect)
-
-@njit
-def merge_rec_guillotine(bin: np.ndarray) -> None:
-    """
-    Merge free rectangles in the bin that can be combined either horizontally or vertically.
-    Modifies the bin in-place by merging adjacent free rectangles to reduce fragmentation.
-    
-    Parameters:
-    - bin (np.ndarray): The bin containing the free rectangles.
-    """
-    
-    free_rects = bin['list_of_free_rec']
-    i = 0
-
-    while i < len(free_rects) and free_rects[i]['width'] > 0:
-
-        merged = False
-        first = free_rects[i] 
-        
-        # Try to find a rectangle that can be merged with 'first'
-        for j in range(i + 1, len(free_rects)):
-            if free_rects[j]['width'] == 0:
-                break
-            
-            second = free_rects[j]
-            
-            # Check for vertical merge
-            if first['width'] == second['width'] and first['corner_x'] == second['corner_x']:
-    
-                # If the first is BELOW the second
-                if (first['corner_y'] + first['height'] == second['corner_y']):
-                    first['height'] += second['height']
-                    remove_free_rect_from_bin_by_idx(bin, j)
-                    merged = True
-                    break
-                
-                # If the first is ABOVE the second
-                if (second['corner_y'] + second['height'] == first['corner_y']):
-                    second['height'] += first['height']
-                    remove_free_rect_from_bin_by_idx(bin, i)
-                    merged = True
-                    break
-            
-            # Check for horizontal merge
-            # Disabled atm because it breaks the guillotine rule
-            
-            # if first['height'] == second['height'] and first['corner_y'] == second['corner_y']:
-                
-            #     # If the first is at the LEFT of the second
-            #     if (first['corner_x'] + first['width'] == second['corner_x']):
-                    
-            #         first['width'] += second['width']
-            #         remove_free_rect_from_bin_by_idx(bin, j)
-            #         merged = True
-            #         break
-                
-            #     # If the first is at the RIGTH of the second
-            #     if (second['corner_x'] + second['width'] == first['corner_x']):
-
-            #         second['width'] += first['width']
-            #         remove_free_rect_from_bin_by_idx(bin, i)
-            #         merged = True
-            #         break
-        
-        # Start all over again if we merged something
-        i = 0 if merged else i+1
 
 @njit(cache = True)
 def check_fit_and_rotation(items: np.ndarray, horizontal_gap: int, vertical_gap: int) -> Tuple[int, bool]: 
@@ -186,42 +113,12 @@ def check_fit_and_rotation(items: np.ndarray, horizontal_gap: int, vertical_gap:
     return best_fit_item_idx, best_fit_rotated
 
 @njit(cache = True)
-def handle_wastage(bin: np.ndarray, current_free_rect: np.ndarray, current_y: int, vertical_gap: int) -> None:
-    """
-    Handle the situation where no items fit into the current free rectangle, potentially marking it as wasted.
-
-    Parameters:
-    - bin (np.ndarray): The bin being processed.
-    - current_free_rect (np.ndarray): The free rectangle that might be wasted.
-    - current_y (int): The vertical starting point of the free rectangle.
-    - vertical_gap (int): The height of the free rectangle.
-
-    Adjusts the free rectangle in the bin to account for wasted space.
-    """
-    
-    wastage_height = vertical_gap
-
-    for item in bin['items']:
-        if item['width'] == 0:
-            break
-        if item['corner_y'] + item['height'] > current_y:
-            wastage_height = min(wastage_height, item['corner_y'] + item['height'] - current_y)
-
-    if wastage_height < vertical_gap:
-        # Update the current free rectangle for the non-wasted part
-        current_free_rect['corner_y'] = current_y + wastage_height
-        current_free_rect['height'] = vertical_gap - wastage_height
-        
-        merge_rec_guillotine(bin)
-        
-    else:
-        # Entire space is wasted, so remove it
-        remove_free_rect_from_bin(bin, current_free_rect)
-
-@njit(cache = True)
 def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_item: np.ndarray, best_fit_rotated: bool, current_x: int, current_y: int) -> None:
     """
     Place the selected item into the bin, performing necessary updates to the free rectangles.
+    
+    Splitting rule (Shorter Leftover): The guillotine cut is horizontal if the remaining horizontal space
+    is smaller than the remaining vertical space, and vertical otherwise.
 
     Parameters:
     - bin (np.ndarray): The bin where the item is being placed.
@@ -230,8 +127,6 @@ def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_i
     - best_fit_rotated (bool): Indicates if the item needs to be rotated for placement.
     - current_x (int): The horizontal starting point of the placement.
     - current_y (int): The vertical starting point of the placement.
-
-    Executes the placement and updates the bin's structure accordingly.
     """
     
     if best_fit_rotated:
@@ -244,12 +139,10 @@ def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_i
     new_horizontal_gap = current_free_rect['width'] - best_fit_item['width']
     new_vertical_gap = current_free_rect['height'] - best_fit_item['height']
     
-    # We want vertical split for now since we handle the wastage areas verticaly
-    guillotine_horizontal = False
+    # Splitting rule: Shorter Leftover
+    guillotine_horizontal = new_horizontal_gap < new_vertical_gap
 
     spliting_process_guillotine(guillotine_horizontal, bin, current_free_rect, best_fit_item)
-    if new_horizontal_gap > 0 and new_vertical_gap > 0:
-        merge_rec_guillotine(bin)
 
 @njit(cache = True)
 def insert_item_lgfi(bin: np.ndarray, items: np.ndarray) -> int:
@@ -276,7 +169,7 @@ def insert_item_lgfi(bin: np.ndarray, items: np.ndarray) -> int:
     best_fit_item = get_item_by_id(items, best_fit_item_id)
     
     if best_fit_item['width'] == 0 or best_fit_item['height'] == 0:
-        handle_wastage(bin, current_free_rect, current_y, vertical_gap)
+        remove_free_rect_from_bin(bin, current_free_rect)
         return -1
     
     perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, current_x, current_y)
