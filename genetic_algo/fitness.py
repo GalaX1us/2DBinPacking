@@ -47,11 +47,16 @@ def compute_fitness(bins: np.ndarray, capacity: int, k: float = 2) -> float:
     total_fitness = 0
     for i in range(n):
         fill_ratio = calculate_bin_fill(bins[i]) / capacity
-        total_fitness = total_fitness + fill_ratio ** k
+        
+        # THis is to break ties by the load of the last bin
+        if i == (n-1):
+            fill_ratio /= 100
+        
+        total_fitness += fill_ratio ** k
 
     return total_fitness / n
 
-@njit(parallel = True)
+@njit(parallel = True, cache = True)
 def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
     """
     Calculate the fitnesses of a population of bin packing solutions.
