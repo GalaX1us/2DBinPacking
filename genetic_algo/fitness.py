@@ -48,16 +48,17 @@ def compute_fitness(bins: np.ndarray, capacity: int, k: float = 2) -> float:
     for i in range(n):
         fill_ratio = calculate_bin_fill(bins[i]) / capacity
         
-        # THis is to break ties by the load of the last bin
-        if i == (n-1):
-            fill_ratio /= 100
+        # This is to break ties by the load of the last bin
+        # if i == (n-1):
+        #     fill_ratio /= 100
         
         total_fitness += fill_ratio ** k
 
     return total_fitness / n
 
 @njit(parallel = True, cache = True)
-def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
+def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_width: int, bin_height: int, 
+                      guillotine_cut: bool, rotation: bool) -> np.ndarray:
     """
     Calculate the fitnesses of a population of bin packing solutions.
 
@@ -66,6 +67,8 @@ def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_width: int,
     - items (np.ndarray): An array of items to be packed.
     - bin_width (int): The width of each bin.
     - bin_height (int): The height of each bin.
+    - guillotine_cut (bool): Should the guillotine cut rule be applied.
+    - rotation (bool): Should the items be able to rotate
 
     Returns:
     - np.ndarray: An array of fitness values for the population.
@@ -80,7 +83,7 @@ def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_width: int,
         sequence = get_corresponding_sequence_by_id(items, population[i])
         
         # Apply the placement heuristic to get the bins
-        solution = lgfi(sequence, bin_width, bin_height)
+        solution = lgfi(sequence, bin_width, bin_height, guillotine_cut, rotation)
         
         # Compute the fitness of this specfic solution (bins)
         fitnesses[i] = compute_fitness(solution, bin_width*bin_height)

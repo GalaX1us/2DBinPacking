@@ -14,7 +14,9 @@ def genetic_algo(items: np.ndarray,
                  crossover_rate: float,
                  mutation_rate: float,
                  kappa: float,
-                 delta: float) -> Tuple[np.ndarray, float]:
+                 delta: float,
+                 guillotine_cut: bool,
+                 rotation: bool) -> Tuple[np.ndarray, float]:
     """
     Apply the genetic algorithm to optimize the packing of items into bins.
 
@@ -27,6 +29,8 @@ def genetic_algo(items: np.ndarray,
     - mutation (float): The probability of mutation of an individual.
     - kappa (float): Parameter controlling the probability distribution in generating solutions.
     - delta (float): Parameter controlling the randomness in crossover.
+    - guillotine_cut (bool): Should the guillotine cut rule be applied.
+    - rotation (bool): Should the items be able to rotate
 
     Returns:
     - tuple: A tuple containing the best solution found and its corresponding fitness.
@@ -43,7 +47,7 @@ def genetic_algo(items: np.ndarray,
     
     for _ in range(nb_generations):
         
-        fitnesses = compute_fitnesses(population, items, bin_width, bin_height)
+        fitnesses = compute_fitnesses(population, items, bin_width, bin_height, guillotine_cut, rotation)
         
         # Store best generation
         best_index = np.argmax(fitnesses)
@@ -63,7 +67,7 @@ def genetic_algo(items: np.ndarray,
 
 def compile_everything() -> None:
     """
-    Compile all the functions in machine code with numba.
+    Compile all the functions in machine code with numba. Uses dummy data.
     """
     
     bin_width, bin_height = 10, 10
@@ -75,9 +79,9 @@ def compile_everything() -> None:
         create_item(1, 6, 6), 
     ])
     
-    lgfi(items, bin_width, bin_height)
+    lgfi(items, bin_width, bin_height, True, True)
     pop = generate_population(items, 5, 1.0)
-    fit = compute_fitnesses(pop, items, bin_width, bin_height)
+    fit = compute_fitnesses(pop, items, bin_width, bin_height, True, True)
     crossover(pop, fit, 0.7, 1.0)
     
     print("===========================")
