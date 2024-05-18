@@ -2,8 +2,8 @@ from genetic_algo.structures import *
 from numba import njit, prange
 from genetic_algo.solutions_generation import custom_choice
 
-@njit(parallel = True)
-def crossover(population: np.ndarray, fitnesses:np.ndarray, crossover_rate: float, delta: float):
+@njit(parallel = True, cache = True)
+def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: float, delta: float) -> np.ndarray:
     """
     Perform crossover on a subset of the population P. Each solution in the
     subset is paired with another solution from P, and uniform order-based
@@ -24,29 +24,33 @@ def crossover(population: np.ndarray, fitnesses:np.ndarray, crossover_rate: floa
     num_crossover = int(crossover_rate * psize)
     
     sorted_indices = np.argsort(-fitnesses)
-    selected_indices = sorted_indices[:num_crossover]
     
-    ranks = np.argsort(sorted_indices)
-    
-    probabilities = ((psize - ranks).astype(np.float64)) ** delta
+    probabilities = ((psize - np.arange(num_crossover)).astype(np.float64)) ** delta
     probabilities /= probabilities.sum()
     
     new_population = np.empty((num_crossover, n), dtype=np.int32)
     
+    pop_idx_array = np.arange(psize)
+    
     for i in prange(num_crossover):
-        idx = selected_indices[i]
+        
+        idx = sorted_indices[i]
         parent1 = population[idx]
-        partner_idx = custom_choice(np.arange(psize), p=probabilities)
+        
+        sorted_idx = custom_choice(pop_idx_array, p=probabilities)
+        partner_idx = sorted_indices[sorted_idx]
+        
         while partner_idx == idx:
-            partner_idx = custom_choice(np.arange(psize), p=probabilities)
+            sorted_idx = custom_choice(pop_idx_array, p=probabilities)
+            partner_idx = sorted_indices[sorted_idx]
         
         parent2 = population[partner_idx]
         new_population[i] = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
 
     return new_population
 
-@njit(cache = True, nogil = True)
-def offspring_generation(parent1, parent2, fitness1, fitness2):
+@njit(cache = True)
+def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: float, fitness2: float) -> np.ndarray:
     """
     Perform a order-based crossover between two parent solutions to generate an offspring.
     This crossover method starts by aligning two parent solutions, checks for identical items at corresponding
