@@ -20,27 +20,7 @@ def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
         if rnd < cumulative_probs[idx]:
             return indices[idx]
         idx += 1
-    return indices[-1]  
-
-@njit(cache = True)
-def remove_index(indices: np.ndarray, chosen_index: int) -> np.ndarray:
-    """
-    Remove a chosen index from an array of indices.
-
-    Parameters:
-    - indices (np.ndarray): Array of indices.
-    - chosen_index (int): The index to be removed.
-
-    Returns:
-    - np.ndarray: New array with the chosen index removed.
-    """
-    new_indices = np.empty(len(indices) - 1, dtype=indices.dtype)
-    j = 0
-    for i in range(indices.shape[0]):
-        if indices[i] != chosen_index:
-            new_indices[j] = indices[i]
-            j += 1
-    return new_indices
+    return indices[-1]
 
 @njit(cache = True)
 def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.ndarray:
