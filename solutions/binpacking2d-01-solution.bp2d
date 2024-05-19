@@ -5,19 +5,19 @@
         "height": 250,
         "items": [
             {
-                "id": 10,
-                "width": 69,
-                "height": 165,
+                "id": 3,
+                "width": 167,
+                "height": 152,
                 "rotated": false,
                 "corner_x": 0,
                 "corner_y": 0
             },
             {
-                "id": 3,
-                "width": 167,
-                "height": 152,
+                "id": 4,
+                "width": 83,
+                "height": 140,
                 "rotated": false,
-                "corner_x": 69,
+                "corner_x": 167,
                 "corner_y": 0
             },
             {
@@ -25,7 +25,15 @@
                 "width": 141,
                 "height": 87,
                 "rotated": true,
-                "corner_x": 69,
+                "corner_x": 0,
+                "corner_y": 152
+            },
+            {
+                "id": 5,
+                "width": 70,
+                "height": 86,
+                "rotated": false,
+                "corner_x": 141,
                 "corner_y": 152
             }
         ]
@@ -44,20 +52,12 @@
                 "corner_y": 0
             },
             {
-                "id": 4,
-                "width": 83,
-                "height": 140,
+                "id": 10,
+                "width": 69,
+                "height": 165,
                 "rotated": false,
                 "corner_x": 167,
                 "corner_y": 0
-            },
-            {
-                "id": 5,
-                "width": 70,
-                "height": 86,
-                "rotated": false,
-                "corner_x": 167,
-                "corner_y": 140
             },
             {
                 "id": 8,
