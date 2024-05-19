@@ -127,11 +127,7 @@ def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray)
 
     # Fill the ordered_items array by mapping each id in id_ordering to the corresponding item
     for idx, item_id in enumerate(id_ordering):
-        if abs(item_id) in id_to_index:
+        if item_id in id_to_index:
             ordered_items[idx] = items[id_to_index[item_id]]
-            
-            if item_id < 0:
-                ordered_items[idx]['width'], ordered_items[idx]['height'] = ordered_items[idx]['height'], ordered_items[idx]['width']
-                ordered_items[idx]['rotated'] = not ordered_items[idx]['rotated']
 
     return ordered_items
