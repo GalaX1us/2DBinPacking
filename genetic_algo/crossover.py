@@ -1,9 +1,11 @@
+from typing import Tuple
+from genetic_algo.fitness import compute_fitness
 from genetic_algo.structures import *
 from numba import njit, prange
 from genetic_algo.solutions_generation import custom_choice
 
 @njit(parallel = True, cache = True)
-def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: float, delta: float) -> np.ndarray:
+def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, crossover_rate: float, delta: float) -> np.ndarray:
     """
     Perform crossover on a subset of the population P. Each solution in the
     subset is paired with another solution from P, and uniform order-based
@@ -12,6 +14,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
     Parameters:
     - population (np.ndarray): Array of individual solutions, each a permutation of item indices.
     - fitnesses (np.ndarray): Array of individual fitnesses.
+    - items (np.ndarray): Array of items to be packed.
     - crossover_rate (float): Proportion of the population to undergo crossover.
     - delta (float): Exponent used to adjust selection probabilities based on fitness ranking.
 
@@ -23,8 +26,10 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
     n = len(population[0])
     num_crossover = int(crossover_rate * psize)
     
-    sorted_indices = np.argsort(-fitnesses)
+    # Get the indices of the sorted fitnesses (lower is the best)
+    sorted_indices = np.argsort(fitnesses)
     
+    # Probabilities to do roulette wheel selection
     probabilities = ((psize - np.arange(num_crossover)).astype(np.float64)) ** delta
     probabilities /= probabilities.sum()
     
@@ -37,6 +42,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
         idx = sorted_indices[i]
         parent1 = population[idx]
         
+        # Select parent by roulette wheel selection
         sorted_idx = custom_choice(pop_idx_array, p=probabilities)
         partner_idx = sorted_indices[sorted_idx]
         
@@ -45,8 +51,13 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
             partner_idx = sorted_indices[sorted_idx]
         
         parent2 = population[partner_idx]
-        new_population[i] = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
-
+        
+        offspring = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
+        
+        # If the offspring is better than the first parent, add it to the population
+        # Otherwise we keep parent 1
+        new_population[i] = offspring
+        
     return new_population
 
 @njit(cache = True)
@@ -69,7 +80,7 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
     """
     
     n = len(parent1)
-    offspring = np.full(n, -1, dtype=int)
+    offspring = np.full(n, -1, dtype=np.int32)
     used_items = set()
     k = l = r = 0
 
