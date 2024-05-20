@@ -90,6 +90,9 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
 def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray) -> np.ndarray:
     """
     Create an array of items based on the provided ordering of item IDs.
+    
+    Absolute are there to handle the representation of a rotated Item. 
+    An item needs to be rotated if it's index in the population is negative.
 
     Parameters:
     - items (np.ndarray): Array of items to be reordered.
@@ -107,7 +110,12 @@ def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray)
 
     # Fill the ordered_items array by mapping each id in id_ordering to the corresponding item
     for idx, item_id in enumerate(id_ordering):
-        if item_id in id_to_index:
-            ordered_items[idx] = items[id_to_index[item_id]]
+        if abs(item_id) in id_to_index:
+            ordered_items[idx] = items[id_to_index[abs(item_id)]]
+            
+            # If the ID is negative the item should be rotated
+            if item_id < 0:
+                ordered_items[idx]['width'], ordered_items[idx]['height'] = ordered_items[idx]['height'], ordered_items[idx]['width']
+                ordered_items[idx]['rotated'] = not ordered_items[idx]['rotated']
 
     return ordered_items

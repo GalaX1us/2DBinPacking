@@ -22,8 +22,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, 
     - np.ndarray: New population subset generated through crossover.
     """
     
-    psize = len(population)
-    n = len(population[0])
+    psize, n = population.shape
     num_crossover = int(crossover_rate * psize)
     
     # Get the indices of the sorted fitnesses (lower is the best)
@@ -40,6 +39,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, 
     for i in prange(num_crossover):
         
         idx = sorted_indices[i]
+        
         parent1 = population[idx]
         
         # Select parent by roulette wheel selection
@@ -68,6 +68,9 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
     positions, and directly transfers matching items to the offspring. Non-matching items are probabilistically 
     chosen based on parent fitness, favoring the item from the "better" parent. This process ensures diversity 
     while maintaining some degree of inheritance from both parents.
+    
+    Absolute are there to handle the representation of a rotated Item. 
+    An item needs to be rotated if it's index in the population is negative.
 
     Parameters:
     - parent1 (np.ndarray): First parent permutation of item indices.
@@ -87,21 +90,21 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
     while r < n:
         if parent1[k] == parent2[l]:
             offspring[r] = parent1[k]
-            used_items.add(parent1[k])
+            used_items.add(abs(parent1[k]))
             
         else:
-            prob = np.array([0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75], dtype=np.float64)
+            prob = np.array([0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75], dtype=np.float32)
             choice = custom_choice(np.array([parent1[k], parent2[l]]), p=prob)
             
             offspring[r] = choice
-            used_items.add(choice)
+            used_items.add(abs(choice))
             
         r += 1
 
         # Move pointers if they are pointing to already used items
-        while k < n and parent1[k] in used_items:
+        while k < n and abs(parent1[k]) in used_items:
             k += 1
-        while l < n and parent2[l] in used_items:
+        while l < n and abs(parent2[l]) in used_items:
             l += 1
 
     return offspring
