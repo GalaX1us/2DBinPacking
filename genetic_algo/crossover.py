@@ -1,9 +1,11 @@
+from typing import Tuple
+from genetic_algo.fitness import compute_fitness
 from genetic_algo.structures import *
 from numba import njit, prange
 from genetic_algo.solutions_generation import custom_choice
 
 @njit(parallel = True, cache = True)
-def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: float, delta: float) -> np.ndarray:
+def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, crossover_rate: float, delta: float) -> np.ndarray:
     """
     Perform crossover on a subset of the population P. Each solution in the
     subset is paired with another solution from P, and uniform order-based
@@ -12,6 +14,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
     Parameters:
     - population (np.ndarray): Array of individual solutions, each a permutation of item indices.
     - fitnesses (np.ndarray): Array of individual fitnesses.
+    - items (np.ndarray): Array of items to be packed.
     - crossover_rate (float): Proportion of the population to undergo crossover.
     - delta (float): Exponent used to adjust selection probabilities based on fitness ranking.
 
@@ -19,12 +22,13 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
     - np.ndarray: New population subset generated through crossover.
     """
     
-    psize = len(population)
-    n = len(population[0])
+    psize, n = population.shape
     num_crossover = int(crossover_rate * psize)
     
-    sorted_indices = np.argsort(-fitnesses)
+    # Get the indices of the sorted fitnesses (lower is the best)
+    sorted_indices = np.argsort(fitnesses)
     
+    # Probabilities to do roulette wheel selection
     probabilities = ((psize - np.arange(num_crossover)).astype(np.float64)) ** delta
     probabilities /= probabilities.sum()
     
@@ -35,8 +39,10 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
     for i in prange(num_crossover):
         
         idx = sorted_indices[i]
+        
         parent1 = population[idx]
         
+        # Select parent by roulette wheel selection
         sorted_idx = custom_choice(pop_idx_array, p=probabilities)
         partner_idx = sorted_indices[sorted_idx]
         
@@ -45,8 +51,13 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
             partner_idx = sorted_indices[sorted_idx]
         
         parent2 = population[partner_idx]
-        new_population[i] = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
-
+        
+        offspring = offspring_generation(parent1, parent2, fitnesses[idx], fitnesses[partner_idx])
+        
+        # If the offspring is better than the first parent, add it to the population
+        # Otherwise we keep parent 1
+        new_population[i] = offspring
+        
     return new_population
 
 @njit(cache = True)
@@ -57,6 +68,9 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
     positions, and directly transfers matching items to the offspring. Non-matching items are probabilistically 
     chosen based on parent fitness, favoring the item from the "better" parent. This process ensures diversity 
     while maintaining some degree of inheritance from both parents.
+    
+    Absolute are there to handle the representation of a rotated Item. 
+    An item needs to be rotated if it's index in the population is negative.
 
     Parameters:
     - parent1 (np.ndarray): First parent permutation of item indices.
@@ -69,28 +83,28 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
     """
     
     n = len(parent1)
-    offspring = np.full(n, -1, dtype=int)
+    offspring = np.full(n, -1, dtype=np.int32)
     used_items = set()
     k = l = r = 0
 
     while r < n:
         if parent1[k] == parent2[l]:
             offspring[r] = parent1[k]
-            used_items.add(parent1[k])
+            used_items.add(abs(parent1[k]))
             
         else:
-            prob = np.array([0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75], dtype=np.float64)
+            prob = np.array([0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75], dtype=np.float32)
             choice = custom_choice(np.array([parent1[k], parent2[l]]), p=prob)
             
             offspring[r] = choice
-            used_items.add(choice)
+            used_items.add(abs(choice))
             
         r += 1
 
         # Move pointers if they are pointing to already used items
-        while k < n and parent1[k] in used_items:
+        while k < n and abs(parent1[k]) in used_items:
             k += 1
-        while l < n and parent2[l] in used_items:
+        while l < n and abs(parent2[l]) in used_items:
             l += 1
 
     return offspring

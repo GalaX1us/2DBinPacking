@@ -20,27 +20,7 @@ def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
         if rnd < cumulative_probs[idx]:
             return indices[idx]
         idx += 1
-    return indices[-1]  
-
-@njit(cache = True)
-def remove_index(indices: np.ndarray, chosen_index: int) -> np.ndarray:
-    """
-    Remove a chosen index from an array of indices.
-
-    Parameters:
-    - indices (np.ndarray): Array of indices.
-    - chosen_index (int): The index to be removed.
-
-    Returns:
-    - np.ndarray: New array with the chosen index removed.
-    """
-    new_indices = np.empty(len(indices) - 1, dtype=indices.dtype)
-    j = 0
-    for i in range(indices.shape[0]):
-        if indices[i] != chosen_index:
-            new_indices[j] = indices[i]
-            j += 1
-    return new_indices
+    return indices[-1]
 
 @njit(cache = True)
 def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.ndarray:
@@ -97,8 +77,10 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
             
             population[i, item_idx] = deterministic_sequence[chosen_index]['id']
             
+            # if np.random.random() < 0.5:
+            #     population[i, item_idx] = -population[i, item_idx]
+            
             available_indices = available_indices[available_indices!=chosen_index]
-            # available_indices = remove_index(available_indices, chosen_index)
             
             item_idx+=1
         
@@ -108,6 +90,9 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
 def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray) -> np.ndarray:
     """
     Create an array of items based on the provided ordering of item IDs.
+    
+    Absolute are there to handle the representation of a rotated Item. 
+    An item needs to be rotated if it's index in the population is negative.
 
     Parameters:
     - items (np.ndarray): Array of items to be reordered.
@@ -125,7 +110,12 @@ def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray)
 
     # Fill the ordered_items array by mapping each id in id_ordering to the corresponding item
     for idx, item_id in enumerate(id_ordering):
-        if item_id in id_to_index:
-            ordered_items[idx] = items[id_to_index[item_id]]
+        if abs(item_id) in id_to_index:
+            ordered_items[idx] = items[id_to_index[abs(item_id)]]
+            
+            # If the ID is negative the item should be rotated
+            if item_id < 0:
+                ordered_items[idx]['width'], ordered_items[idx]['height'] = ordered_items[idx]['height'], ordered_items[idx]['width']
+                ordered_items[idx]['rotated'] = not ordered_items[idx]['rotated']
 
     return ordered_items

@@ -1,5 +1,5 @@
 from data_manager import load_items_from_file, export_solutions_to_json, import_solution_from_json
-from genetic_algo.gen_algo import genetic_algo, compile_everything
+from genetic_algo.gen_algo import genetic_algo, initialize_numba_functions
 from genetic_algo.lgfi import lgfi
 from genetic_algo.solutions_generation import get_corresponding_sequence_by_id
 from genetic_algo.visualization import visualize_bins
@@ -9,12 +9,17 @@ import time
 INPUT_DATA_DIRECTORY = "data"
 OUTPUT_DATA_DIRECTORY = "solutions"
 
-POPULATION_SIZE = 500
-NB_GENERATIONS = 50
+POPULATION_SIZE = 50
+NB_GENERATIONS = 200
 CROSSOVER_RATE = 0.7
-MUTATION_RATE = 0.1
-KAPPA = 3 # Must be >= 1
-DELTA = 3 # Must be >= 1
+
+MUTATION_RATE = 0.0
+
+KAPPA = 5 # Must be >= 1
+DELTA = 5 # Must be >= 1
+
+GUILLOTINE = True
+ROTATION = True
 
 if __name__ == "__main__":
 
@@ -23,7 +28,7 @@ if __name__ == "__main__":
     # You should first execute this single line to compile everything and cache the compiled code
     # This allows future compilations time to be waaaaaaay faster
     
-    compile_everything()
+    initialize_numba_functions(advanced=True)
     
     # ====================== Generate Solutions ======================
 
@@ -33,6 +38,10 @@ if __name__ == "__main__":
             
             bin_width, bin_height, items = load_items_from_file(full_path)
             
+            print(f"===================== {filename} =====================")
+            print(f"Bin dimensions: {bin_width}x{bin_height}")
+            print(f"Number of items: {len(items)}")
+            
             start = time.perf_counter()
             best_solution, best_fitness = genetic_algo(items = items,
                                                     bin_dimensions=(bin_width, bin_height),
@@ -41,24 +50,25 @@ if __name__ == "__main__":
                                                     crossover_rate=CROSSOVER_RATE,
                                                     mutation_rate=MUTATION_RATE,
                                                     kappa=KAPPA,
-                                                    delta=DELTA)
+                                                    delta=DELTA,
+                                                    guillotine_cut=GUILLOTINE,
+                                                    rotation=ROTATION)
             
             ordered_items = get_corresponding_sequence_by_id(items, best_solution)
-            solution = lgfi(ordered_items, bin_width=bin_width, bin_height=bin_height)
+            solution = lgfi(ordered_items, bin_width=bin_width, bin_height=bin_height, 
+                            guillotine_cut=GUILLOTINE, rotation=ROTATION)
             time_elapsed = time.perf_counter() - start
             
             solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, filename.split('.')[0] + "-solution.bp2d") 
             export_solutions_to_json(solution, solution_file_path)
             
-            print(f"===================== {filename} =====================")
-            print(f"Bin dimensions: {bin_width}x{bin_height}")
-            print(f"Number of items: {len(items)}")
+            
             print(f"Time elapsed: {time_elapsed:.1f} seconds")
             print(f"Best solution: {len(solution)} bins")
             print(f"Solution saved to: {solution_file_path}\n")
     
     # ====================== Visualize Solutions ======================
            
-    # solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, "binpacking2d-13" + "-solution.bp2d") 
+    # solution_file_path = os.path.join(OUTPUT_DATA_DIRECTORY, "binpacking2d-11" + "-solution.bp2d") 
     # bins = import_solution_from_json(solution_file_path)
     # visualize_bins(bins)

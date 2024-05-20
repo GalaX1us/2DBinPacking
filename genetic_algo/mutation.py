@@ -20,12 +20,12 @@ def mutation(population: np.ndarray, mutation_rate: float) -> np.ndarray:
         if np.random.random() < mutation_rate:
             
             # Perform mutation on this individual
-            mutate_individual(mutated_population[i])
+            rotate_individual(mutated_population[i])
 
     return mutated_population
 
 @njit(cache=True)
-def mutate_individual(individual: np.ndarray) -> None:
+def swap_individual(individual: np.ndarray) -> None:
     """
     Perform mutation on an individual by swapping two elements.
 
@@ -41,4 +41,19 @@ def mutate_individual(individual: np.ndarray) -> None:
 
     # Swap the elements
     individual[idx2], individual[idx1] = individual[idx1], individual[idx2]
+    
+@njit(cache=True)
+def rotate_individual(individual: np.ndarray) -> None:
+    """
+    Perform mutation on an individual by rotating one element.
+
+    Parameters:
+    - individual (np.ndarray): An individual solution.
+    """
+    n = len(individual)
+
+    idx1 = np.random.choice(n, 1)
+
+    # Rotate the corresponding individual 
+    individual[idx1] = -individual[idx1]
     
