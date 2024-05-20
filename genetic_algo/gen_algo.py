@@ -44,7 +44,7 @@ def genetic_algo(items: np.ndarray,
     best_fitness = np.inf
     
     
-    for _ in tqdm.tqdm(range(nb_generations)):
+    for _ in range(nb_generations):
         
         fitnesses = compute_fitnesses(population, items, bin_dimensions, guillotine_cut, rotation)
         
@@ -55,10 +55,11 @@ def genetic_algo(items: np.ndarray,
             best_fitness = current_best_fitness
             best_solution[:] = population[best_index]
         
-        
-        crossover_population = crossover(population, fitnesses, items, crossover_rate, delta)
-        remaining_population = generate_population(items, population_size - crossover_population.shape[0] ,kappa)
-        population = np.concatenate([crossover_population, remaining_population])
+        num_crossover = int(crossover_rate * population_size)
+        # Create the new population with crossover
+        population[:num_crossover] = crossover(population, fitnesses, items, crossover_rate, delta)
+        #  Fill the rest with a simple roulette wheel selection based on the deterministic sequence
+        population[num_crossover:] = generate_population(items, population_size - num_crossover, kappa)
         
         population = mutation(population, mutation_rate)
         
@@ -89,7 +90,6 @@ def initialize_numba_functions(advanced=False):
         remove_free_rect_from_bin_by_idx: (bin, 0),
         get_item_by_id: (np.zeros(5, dtype=Item), 1),
         custom_choice: (np.arange(5), np.random.random(5)),
-        remove_index: (np.arange(5), 2),
         generate_population: (np.zeros(5, dtype=Item), 10, 0.5),
         get_corresponding_sequence_by_id: (np.zeros(5, dtype=Item), np.arange(5)),
         mutation: (np.zeros((5, 5), dtype=np.int32), 0.5),  
@@ -137,7 +137,7 @@ def initialize_numba_functions(advanced=False):
     
     if advanced:
         for name, duration in compilation_times.items():
-            print(f"{name:>{max_func_name_len}} -> {duration:<8.4f} secondes")
+            print(f"{name:>{max_func_name_len}} -> {duration:<8.4f} seconds")
         
     print("====================================================================")    
     print(f"Total compilation time -> {total_compilation_time:.4f} seconds")
