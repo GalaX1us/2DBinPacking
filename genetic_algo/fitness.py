@@ -75,16 +75,12 @@ def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: 
     """
     
     bin_width, bin_height = bin_dimensions
-    
     # This gives an array of items with a specific ordering
     sequence = get_corresponding_sequence_by_id(items, id_ordering)
-    
     # Apply the placement heuristic to get the bins
     solution = lgfi(sequence, bin_width, bin_height, guillotine_cut, rotation)
-    
     # Compute the fitness of this specfic solution (bins)
     solution_fitness = len(solution) + (calculate_bin_fill(solution[-1]) / (bin_width*bin_height))
-    
     return solution_fitness
 
 @njit(parallel = True, cache = True)
