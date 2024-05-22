@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, float32, int32, boolean, void, from_dtype
+from numba import njit, int32, boolean, void, from_dtype, float64
 from numba.types import UniTuple
 
 Item = np.dtype([

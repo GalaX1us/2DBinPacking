@@ -1,6 +1,6 @@
 from genetic_algo.structures import *
 
-@njit(int32(int32[:], float32[:]), cache = True)
+@njit(int32(int32[:], float64[:]), cache = True)
 def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
     """
     Perform a probabilistic selection from a list of indices based on provided probabilities.
@@ -22,8 +22,8 @@ def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
         idx += 1
     return indices[-1]
 
-@njit(int32[:, :](from_dtype(Item)[:], int32, float32), cache = True)
-def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.ndarray:
+@njit(int32[:, :](from_dtype(Item)[:], int32, float64), cache = True)
+def generate_population(items: np.ndarray, psize: int, kappa: np.float64) -> np.ndarray:
     """
     Generate a population of solutions using a probabilistic method based on the 
     deterministic sequence of items sorted by non-increasing area.
@@ -37,7 +37,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
                           area and sort items for the deterministic sequence.
     - psize (int): The size of the population to generate. This specifies the number of individual
                    solutions in the population.
-    - kappa (np.float32): A parameter that influences the selection probability of each item. Higher values
+    - kappa (np.float64): A parameter that influences the selection probability of each item. Higher values
                             make the selection probability closer to the deterministic sequence order. The
                             influence is calculated as (n - position)^kappa, where position is the index of an
                             item in the sorted deterministic sequence.
@@ -71,7 +71,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
             # Calculate selection probabilities
             vi_available = vi[available_indices]
             probabilities = vi_available / vi_available.sum()
-            probabilities = probabilities.astype(np.float32)
+            probabilities = probabilities.astype(np.float64)
             
             # Select an item index from available_indices using the computed probabilities
             chosen_index = custom_choice(available_indices, p=probabilities)
