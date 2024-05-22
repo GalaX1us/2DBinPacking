@@ -102,8 +102,7 @@ def import_solution_from_json(file_path):
         for item_data in bin_data['items']:
             item = create_item(item_data['id'],
                                item_data['width'],
-                               item_data['height'],
-                               item_data['rotated'])
+                               item_data['height'])
             
             add_item_to_bin(bin_obj, item, item_data['corner_x'], item_data['corner_y'])
         

@@ -5,45 +5,6 @@
         "height": 500,
         "items": [
             {
-                "id": 1,
-                "width": 198,
-                "height": 205,
-                "rotated": false,
-                "corner_x": 0,
-                "corner_y": 0
-            },
-            {
-                "id": 6,
-                "width": 245,
-                "height": 343,
-                "rotated": true,
-                "corner_x": 198,
-                "corner_y": 0
-            },
-            {
-                "id": 8,
-                "width": 164,
-                "height": 250,
-                "rotated": false,
-                "corner_x": 0,
-                "corner_y": 205
-            },
-            {
-                "id": 4,
-                "width": 272,
-                "height": 147,
-                "rotated": false,
-                "corner_x": 198,
-                "corner_y": 343
-            }
-        ]
-    },
-    {
-        "id": 1,
-        "width": 500,
-        "height": 500,
-        "items": [
-            {
                 "id": 9,
                 "width": 282,
                 "height": 356,
@@ -78,25 +39,64 @@
         ]
     },
     {
+        "id": 1,
+        "width": 500,
+        "height": 500,
+        "items": [
+            {
+                "id": 1,
+                "width": 198,
+                "height": 205,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            },
+            {
+                "id": 6,
+                "width": 245,
+                "height": 343,
+                "rotated": true,
+                "corner_x": 198,
+                "corner_y": 0
+            },
+            {
+                "id": 8,
+                "width": 164,
+                "height": 250,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 205
+            },
+            {
+                "id": 4,
+                "width": 272,
+                "height": 147,
+                "rotated": false,
+                "corner_x": 198,
+                "corner_y": 343
+            }
+        ]
+    },
+    {
         "id": 2,
         "width": 500,
         "height": 500,
         "items": [
             {
                 "id": 3,
-                "width": 236,
-                "height": 364,
-                "rotated": true,
+                "width": 364,
+                "height": 236,
+                "rotated": false,
                 "corner_x": 0,
                 "corner_y": 0
             },
             {
                 "id": 5,
-                "width": 145,
-                "height": 352,
-                "rotated": true,
-                "corner_x": 236,
-                "corner_y": 0
+                "width": 352,
+                "height": 145,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 236
             }
         ]
     }
