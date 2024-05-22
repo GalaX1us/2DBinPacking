@@ -6,7 +6,7 @@ from numba import prange
 from genetic_algo.lgfi import lgfi
 from genetic_algo.solutions_generation import get_corresponding_sequence_by_id
 
-@njit(int32(from_dtype(Bin)), cache = True)
+@njit(float32(from_dtype(Bin)), cache = True)
 def calculate_bin_fill(bin: np.ndarray) -> int:
     """
     Calculate the total fill of a bin based on the items placed in it.
@@ -15,7 +15,7 @@ def calculate_bin_fill(bin: np.ndarray) -> int:
     - bin (np.ndarray): A structured array representing a bin, containing items with their placements.
     
     Returns:
-    - int: Total filled area of the bin.
+    - float: Total filled area of the bin.
     """
     total_fill = 0
     for i in range(bin['items'].shape[0]):
@@ -26,34 +26,9 @@ def calculate_bin_fill(bin: np.ndarray) -> int:
         
         total_fill += item['width'] * item['height']
         
-    return total_fill
+    return total_fill / (bin['width']*bin['height'])
 
-@njit(cache = True)
-def compute_fitness_fill(bins: np.ndarray, capacity: int, k: float = 2) -> float:
-    """
-    Calculate the fitness of a bin packing solution.
-
-    Parameters:
-    - bins (np.ndarray): An array of structured arrays representing the bins.
-    - capacity (int): The maximum capacity (area) of each bin.
-    - k (float): The exponent to control the preference for more filled bins.
-
-    Returns:
-    - float: The calculated fitness value of the bin packing solution.
-    """
-    n = len(bins)
-    if n == 0:
-        return 0.0 
-
-    total_fitness = 0
-    for i in range(n):
-        fill_ratio = calculate_bin_fill(bins[i]) / capacity
-        
-        total_fitness += fill_ratio ** k
-
-    return total_fitness / n
-
-@njit(cache = True)
+@njit(float32(from_dtype(Item)[:], int32[:], UniTuple(int32, 2), boolean, boolean), cache = True)
 def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: Tuple[int, int], 
                     guillotine_cut: bool, rotation: bool):
     """
@@ -80,7 +55,7 @@ def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: 
     # Apply the placement heuristic to get the bins
     solution = lgfi(sequence, bin_width, bin_height, guillotine_cut, rotation)
     # Compute the fitness of this specfic solution (bins)
-    solution_fitness = len(solution) + (calculate_bin_fill(solution[-1]) / (bin_width*bin_height))
+    solution_fitness = len(solution) + calculate_bin_fill(solution[-1])
     return solution_fitness
 
 @njit(float32[:](int32[:, :], from_dtype(Item)[:], UniTuple(int32, 2), boolean, boolean), parallel = True, cache = True)
@@ -102,7 +77,7 @@ def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_dimensions:
     
     population_size = len(population)
     
-    fitnesses = np.zeros(population_size)
+    fitnesses = np.zeros(population_size, dtype=float32)
     
     for i in prange(population_size):
         

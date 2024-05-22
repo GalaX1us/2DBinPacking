@@ -75,7 +75,7 @@ def initialize_numba_functions(advanced=False):
     """
     
     if advanced:
-        print("===================== Compilation (Advanced Mode) =====================")
+        print("===================== Compilation (Advanced Mode) =====================",flush=True)
 
     bin = create_bin(1, 100, 100)
     
@@ -105,7 +105,6 @@ def initialize_numba_functions(advanced=False):
         find_current_position_idx: (bin,),  
         lgfi: (np.empty(0, dtype=Item), 10, 10, True, True),
         calculate_bin_fill: (bin,),  
-        compute_fitness_fill: (np.zeros(5, dtype=Bin), 100),  
         compute_fitness: (np.array([create_item(0, 6, 6), create_item(1, 6, 6), create_item(2, 4, 4), create_item(3, 3, 3)]), np.array([0, 1, 2, 3]), (10, 10), True, True),  
         compute_fitnesses: (np.array([np.array([0, 1, 2])]), np.array([create_item(0, 6, 6),create_item(1, 6, 6),create_item(2, 4, 4)]), (10, 10), True, True),  
         offspring_generation: (np.zeros(5, dtype=np.int32), np.zeros(5, dtype=np.int32), 0, 0),  

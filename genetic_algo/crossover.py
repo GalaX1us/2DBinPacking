@@ -61,7 +61,7 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, 
         
     return new_population
 
-@njit(cache = True)
+@njit(int32[:](int32[:], int32[:], float32, float32), cache = True)
 def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: float, fitness2: float) -> np.ndarray:
     """
     Perform a order-based crossover between two parent solutions to generate an offspring.
