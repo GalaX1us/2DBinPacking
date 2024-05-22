@@ -2,7 +2,7 @@ from typing import Tuple
 from genetic_algo.structures import *
 from numba.typed import List
 
-@njit(cache = True)
+@njit(from_dtype(Item)[:](from_dtype(Item)[:], int32), cache = True)
 def remove_item_from_remaining(remaining: np.ndarray, item_id: int) -> np.ndarray:
     """
     Remove an item from the remaining items array based on its id.
@@ -19,7 +19,36 @@ def remove_item_from_remaining(remaining: np.ndarray, item_id: int) -> np.ndarra
     
     return remaining
 
-@njit(cache = True)
+@njit(int32(from_dtype(Bin)), cache = True)
+def find_current_position_idx(bin: np.ndarray) -> int:
+    """
+    Find the index of the bottom leftmost free rectangle for placement in the bin.
+
+    Parameters:
+    - bin (np.ndarray): The bin being evaluated.
+
+    Returns:
+    - (int): Index of the best free rectangle, or -1 if none are suitable.
+    """
+    
+    best_free_rect_idx = -1
+    lowest_y = np.inf
+    lowest_x = np.inf
+
+    for i in range(len(bin['list_of_free_rec'])):
+        rec = bin['list_of_free_rec'][i]
+        if rec['width'] == 0:
+            continue
+        
+        if best_free_rect_idx == -1 or rec['corner_y'] < lowest_y or \
+           (rec['corner_y'] == lowest_y and rec['corner_x'] < lowest_x):
+            lowest_y = rec['corner_y']
+            lowest_x = rec['corner_x']
+            best_free_rect_idx = i
+
+    return best_free_rect_idx
+
+@njit(void(boolean, from_dtype(Bin), from_dtype(FreeRectangle), from_dtype(Item)), cache = True)
 def spliting_process_guillotine(horizontal: bool, bin: np.ndarray, old_free_rect: np.ndarray, item: np.ndarray) -> None:
     """
     Perform the guillotine split process after placing an item in a bin.
@@ -62,7 +91,7 @@ def spliting_process_guillotine(horizontal: bool, bin: np.ndarray, old_free_rect
     if changes == 0:
         remove_free_rect_from_bin(bin, old_free_rect)
         
-@njit(cache = True)
+@njit(void(from_dtype(Bin)), cache = True)
 def merge_rec_guillotine(bin):
     """
     Merge free rectangles in the bin that can be combined either horizontally or vertically.
@@ -126,7 +155,7 @@ def merge_rec_guillotine(bin):
         # Start all over again if we merged something
         i = 0 if merged else i+1
         
-@njit(cache = True)
+@njit(void(from_dtype(Bin), from_dtype(FreeRectangle), int32, int32), cache = True)
 def handle_wastage(bin: np.ndarray, current_free_rect: np.ndarray, current_y: int, vertical_gap: int) -> None:
     """
     Handle the situation where no items fit into the current free rectangle, potentially marking it as wasted.
@@ -159,7 +188,7 @@ def handle_wastage(bin: np.ndarray, current_free_rect: np.ndarray, current_y: in
         # Entire space is wasted, so remove it
         remove_free_rect_from_bin(bin, current_free_rect)
 
-@njit(cache = True)
+@njit(UniTuple(int32, 2)(from_dtype(Item)[:], int32, int32, boolean), cache = True)
 def check_fit_and_rotation(items: np.ndarray, horizontal_gap: int, vertical_gap: int, rotation: bool) -> Tuple[int, bool]: 
     """
     Check each item to see if it fits in the given gaps with or without rotation.
@@ -214,7 +243,7 @@ def check_fit_and_rotation(items: np.ndarray, horizontal_gap: int, vertical_gap:
     
     return best_fit_item_idx, best_fit_rotated
 
-@njit(cache = True)
+@njit(void(from_dtype(Bin), from_dtype(FreeRectangle), from_dtype(Item), boolean, int32, int32, boolean), cache = True)
 def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_item: np.ndarray, best_fit_rotated: bool, 
                       current_x: int, current_y: int, guillotine_cut: bool) -> None:
     """
@@ -251,8 +280,8 @@ def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_i
     if new_horizontal_gap > 0 and new_vertical_gap > 0 and not guillotine_cut:
         merge_rec_guillotine(bin)
 
-@njit(cache = True)
-def insert_item_lgfi(bin: np.ndarray, items: np.ndarray, guillotine_cut:bool, rotation: bool) -> int:
+@njit(int32(from_dtype(Bin), from_dtype(Item)[:], boolean, boolean), cache = True)
+def insert_item_lgfi(bin: np.ndarray, items: np.ndarray, guillotine_cut: bool, rotation: bool) -> int:
     """
     Attempt to insert an item into the given bin by finding the best fitting position.
 
@@ -291,37 +320,8 @@ def insert_item_lgfi(bin: np.ndarray, items: np.ndarray, guillotine_cut:bool, ro
     
     return best_fit_item_id
 
-@njit(cache = True)
-def find_current_position_idx(bin: np.ndarray) -> int:
-    """
-    Find the index of the bottom leftmost free rectangle for placement in the bin.
-
-    Parameters:
-    - bin (np.ndarray): The bin being evaluated.
-
-    Returns:
-    - (int): Index of the best free rectangle, or -1 if none are suitable.
-    """
-    
-    best_free_rect_idx = -1
-    lowest_y = np.inf
-    lowest_x = np.inf
-
-    for i in range(len(bin['list_of_free_rec'])):
-        rec = bin['list_of_free_rec'][i]
-        if rec['width'] == 0:
-            continue
-        
-        if best_free_rect_idx == -1 or rec['corner_y'] < lowest_y or \
-           (rec['corner_y'] == lowest_y and rec['corner_x'] < lowest_x):
-            lowest_y = rec['corner_y']
-            lowest_x = rec['corner_x']
-            best_free_rect_idx = i
-
-    return best_free_rect_idx
-
-@njit(cache = True)
-def lgfi(items: np.ndarray, bin_width: int, bin_height: int, guillotine_cut: bool, rotation: bool) -> List:
+@njit(from_dtype(Bin)[:](from_dtype(Item)[:], int32, int32, boolean, boolean), cache = True)
+def lgfi(items: np.ndarray, bin_width: int, bin_height: int, guillotine_cut: bool, rotation: bool) -> np.ndarray:
     """
     Main function to apply the Level Guillotine Fit Insertion algorithm to pack items into bins.
 
@@ -336,7 +336,7 @@ def lgfi(items: np.ndarray, bin_width: int, bin_height: int, guillotine_cut: boo
     - list: A list of bins containing the packed items.
     """
     
-    bins = List()
+    bins = np.empty(len(items), dtype=Bin)
     bin_count = 0
     unpacked_items = np.copy(items)
     
@@ -344,7 +344,7 @@ def lgfi(items: np.ndarray, bin_width: int, bin_height: int, guillotine_cut: boo
         
         item_id = -1
         # Attempt to place an item in the existing bins
-        for i in range(len(bins)):
+        for i in range(bin_count):
             bin = bins[i]
             item_id = insert_item_lgfi(bin, unpacked_items, guillotine_cut, rotation)
             
@@ -359,8 +359,8 @@ def lgfi(items: np.ndarray, bin_width: int, bin_height: int, guillotine_cut: boo
         if item_id == -1:
             if bin_count == 0 or not np.any(np.array([bins[i]['list_of_free_rec'][0]['width'] != 0 for i in range(bin_count)], dtype=np.bool_)):
                 new_bin = create_bin(bin_count, bin_width, bin_height)
-                bins.append(new_bin)
+                bins[bin_count] = new_bin
                 bin_count += 1
                 
-    return bins
+    return bins[:bin_count]
     

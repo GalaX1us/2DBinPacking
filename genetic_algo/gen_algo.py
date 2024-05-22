@@ -40,7 +40,7 @@ def genetic_algo(items: np.ndarray,
     
     population = generate_population(items, population_size, kappa)
     
-    best_solution = np.zeros_like(population[0])
+    best_solution = np.zeros_like(population[0], dtype=np.int32)
     best_fitness = np.inf
     
     
@@ -57,11 +57,11 @@ def genetic_algo(items: np.ndarray,
         
         num_crossover = int(crossover_rate * population_size)
         # Create the new population with crossover
-        population[:num_crossover] = crossover(population, fitnesses, items, crossover_rate, delta)
-        #  Fill the rest with a simple roulette wheel selection based on the deterministic sequence
+        population[:num_crossover] = crossover(population, fitnesses, np.float64(crossover_rate), delta)
+        # Fill the rest with a simple roulette wheel selection based on the deterministic sequence
         population[num_crossover:] = generate_population(items, population_size - num_crossover, kappa)
         
-        population = mutation(population, mutation_rate)
+        # population = mutation(population, mutation_rate)
         
     return best_solution, best_fitness 
     
@@ -75,21 +75,21 @@ def initialize_numba_functions(advanced=False):
     """
     
     if advanced:
-        print("===================== Compilation (Advanced Mode) =====================")
+        print("===================== Compilation (Advanced Mode) =====================",flush=True)
 
     bin = create_bin(1, 100, 100)
     
-    # Fonctions à compiler avec leurs arguments
+    # Functions to copmile with their corresponding dummy arguments
     functions_with_args = {
         create_bin: (1, 10, 10),
         create_free_rectangle: (0, 0, 5, 5),
-        create_item: (1, 3, 3, False),
+        create_item: (1, 3, 3),
         add_item_to_bin: (bin, create_item(0, 0, 0), 0, 0),
         add_free_rect_to_bin: (bin, create_free_rectangle(0, 0, 0, 0)),
         remove_free_rect_from_bin: (bin, create_free_rectangle(0, 0, 0, 0)),
         remove_free_rect_from_bin_by_idx: (bin, 0),
         get_item_by_id: (np.zeros(5, dtype=Item), 1),
-        custom_choice: (np.arange(5), np.random.random(5)),
+        custom_choice: (np.arange(5), np.random.random(5).astype(np.float64)),
         generate_population: (np.zeros(5, dtype=Item), 10, 0.5),
         get_corresponding_sequence_by_id: (np.zeros(5, dtype=Item), np.arange(5)),
         mutation: (np.zeros((5, 5), dtype=np.int32), 0.5),  
@@ -105,11 +105,10 @@ def initialize_numba_functions(advanced=False):
         find_current_position_idx: (bin,),  
         lgfi: (np.empty(0, dtype=Item), 10, 10, True, True),
         calculate_bin_fill: (bin,),  
-        compute_fitness_fill: (np.zeros(5, dtype=Bin), 100),  
         compute_fitness: (np.array([create_item(0, 6, 6), create_item(1, 6, 6), create_item(2, 4, 4), create_item(3, 3, 3)]), np.array([0, 1, 2, 3]), (10, 10), True, True),  
         compute_fitnesses: (np.array([np.array([0, 1, 2])]), np.array([create_item(0, 6, 6),create_item(1, 6, 6),create_item(2, 4, 4)]), (10, 10), True, True),  
         offspring_generation: (np.zeros(5, dtype=np.int32), np.zeros(5, dtype=np.int32), 0, 0),  
-        crossover: (np.zeros((1, 1), dtype=np.int32), np.random.random(1), np.zeros(1, dtype=Item), 0.5, 2.0),  
+        crossover: (np.zeros((1, 1), dtype=np.int32), np.random.random(1).astype(np.float64), 0.5, 2.0),  
     }
     
     total_compilation_time: float = 0.0
