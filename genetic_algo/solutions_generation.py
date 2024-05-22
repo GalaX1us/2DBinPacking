@@ -1,6 +1,6 @@
 from genetic_algo.structures import *
 
-@njit(cache = True)
+@njit(int32(int32[:], float32[:]), cache = True)
 def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
     """
     Perform a probabilistic selection from a list of indices based on provided probabilities.
@@ -22,7 +22,7 @@ def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
         idx += 1
     return indices[-1]
 
-@njit(cache = True)
+@njit(int32[:, :](from_dtype(Item)[:], int32, float32), cache = True)
 def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.ndarray:
     """
     Generate a population of solutions using a probabilistic method based on the 
@@ -63,7 +63,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
     for i in range(psize):
         
         # Prepare for roulette wheel selection
-        available_indices = np.arange(n)
+        available_indices = np.arange(n, dtype=np.int32)
         
         item_idx = 0
         
@@ -71,6 +71,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
             # Calculate selection probabilities
             vi_available = vi[available_indices]
             probabilities = vi_available / vi_available.sum()
+            probabilities = probabilities.astype(np.float32)
             
             # Select an item index from available_indices using the computed probabilities
             chosen_index = custom_choice(available_indices, p=probabilities)
@@ -86,7 +87,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float32) -> np.
         
     return population
 
-@njit(cache = True)
+@njit(from_dtype(Item)[:](from_dtype(Item)[:], int32[:]), cache = True)
 def get_corresponding_sequence_by_id(items: np.ndarray, id_ordering: np.ndarray) -> np.ndarray:
     """
     Create an array of items based on the provided ordering of item IDs.

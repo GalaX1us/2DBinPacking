@@ -6,7 +6,7 @@ from numba import prange
 from genetic_algo.lgfi import lgfi
 from genetic_algo.solutions_generation import get_corresponding_sequence_by_id
 
-@njit(cache = True)
+@njit(int32(from_dtype(Bin)), cache = True)
 def calculate_bin_fill(bin: np.ndarray) -> int:
     """
     Calculate the total fill of a bin based on the items placed in it.
@@ -83,7 +83,7 @@ def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: 
     solution_fitness = len(solution) + (calculate_bin_fill(solution[-1]) / (bin_width*bin_height))
     return solution_fitness
 
-@njit(parallel = True, cache = True)
+@njit(float32[:](int32[:, :], from_dtype(Item)[:], UniTuple(int32, 2), boolean, boolean), parallel = True, cache = True)
 def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_dimensions: Tuple[int, int], 
                       guillotine_cut: bool, rotation: bool) -> np.ndarray:
     """

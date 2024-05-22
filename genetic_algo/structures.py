@@ -1,5 +1,6 @@
 import numpy as np
-from numba import njit
+from numba import njit, float32, int32, boolean, void, from_dtype
+from numba.types import UniTuple
 
 Item = np.dtype([
     ('id', np.int32), 
@@ -25,7 +26,7 @@ Bin = np.dtype([
     ('list_of_free_rec', FreeRectangle, (50,)) 
 ])
 
-@njit(cache=True)
+@njit(from_dtype(Bin)(int32, int32, int32), cache=True)
 def create_bin(bin_id: int, width: int, height: int) -> np.ndarray:
     """
     Create a new bin with the specified ID, width, and height.
@@ -50,7 +51,7 @@ def create_bin(bin_id: int, width: int, height: int) -> np.ndarray:
     
     return bin
 
-@njit(cache=True)
+@njit(from_dtype(FreeRectangle)(int32, int32, int32, int32), cache=True)
 def create_free_rectangle(x: int, y: int, width: int, height: int) -> np.ndarray:
     """
     Create a new free rectangle with the specified parameters.
@@ -74,8 +75,8 @@ def create_free_rectangle(x: int, y: int, width: int, height: int) -> np.ndarray
     
     return rect
 
-@njit(cache=True)
-def create_item(id: int, width: int, height: int, rotated: bool = False) -> np.ndarray:
+@njit(from_dtype(Item)(int32, int32, int32), cache=True)
+def create_item(id: int, width: int, height: int) -> np.ndarray:
     """
     Create a new item with the specified ID, width, height, and rotation status.
 
@@ -83,7 +84,6 @@ def create_item(id: int, width: int, height: int, rotated: bool = False) -> np.n
     - id (int): The ID of the item.
     - width (int): The width of the item.
     - height (int): The height of the item.
-    - rotated (bool): The rotation status of the item. Default False.
 
     Returns:
     - np.ndarray: A numpy array representing the created item.
@@ -94,13 +94,13 @@ def create_item(id: int, width: int, height: int, rotated: bool = False) -> np.n
     item['id'] = id
     item['width'] = width
     item['height'] = height
-    item['rotated'] = rotated
+    item['rotated'] = False
     item['corner_x'] = -1
     item['corner_y'] = -1
     
     return item
 
-@njit(cache=True)
+@njit(boolean(from_dtype(Bin), from_dtype(Item), int32, int32), cache=True)
 def add_item_to_bin(bin: np.ndarray, item: np.ndarray, x: int, y: int) -> bool:
     """
     Add an item to a bin at the specified position.
@@ -131,7 +131,7 @@ def add_item_to_bin(bin: np.ndarray, item: np.ndarray, x: int, y: int) -> bool:
     # No empty spot available
     return False  
 
-@njit(cache=True)
+@njit(boolean(from_dtype(Bin), from_dtype(FreeRectangle)), cache=True)
 def add_free_rect_to_bin(bin: np.ndarray, free_rect: np.ndarray) -> bool:
     """
     Add a free rectangle to a bin.
@@ -159,7 +159,7 @@ def add_free_rect_to_bin(bin: np.ndarray, free_rect: np.ndarray) -> bool:
     # No empty spot available
     return False  
 
-@njit(cache=True)
+@njit(boolean(from_dtype(Bin), from_dtype(FreeRectangle)), cache=True)
 def remove_free_rect_from_bin(bin: np.ndarray, free_rect: np.ndarray) -> bool:
     """
     Remove a free rectangle from a bin.
@@ -193,7 +193,7 @@ def remove_free_rect_from_bin(bin: np.ndarray, free_rect: np.ndarray) -> bool:
     # Free rectangle not found
     return False  
 
-@njit(cache=True)
+@njit(void(from_dtype(Bin), int32), cache=True)
 def remove_free_rect_from_bin_by_idx(bin: np.ndarray, idx: int) -> None:
     """
     Remove a free rectangle from a bin by its index.
@@ -213,7 +213,7 @@ def remove_free_rect_from_bin_by_idx(bin: np.ndarray, idx: int) -> None:
     free_rects[-1]['corner_x'] = 0
     free_rects[-1]['corner_y'] = 0
 
-@njit(cache=True)
+@njit(from_dtype(Item)(from_dtype(Item)[:], int32), cache=True)
 def get_item_by_id(items: np.ndarray, id: int) -> np.ndarray:
     """
     Retrieve an item from an array of items by its ID.

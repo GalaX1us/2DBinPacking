@@ -29,12 +29,13 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, items: np.ndarray, 
     sorted_indices = np.argsort(fitnesses)
     
     # Probabilities to do roulette wheel selection
-    probabilities = ((psize - np.arange(num_crossover)).astype(np.float64)) ** delta
+    probabilities = ((psize - np.arange(num_crossover)).astype(np.float32)) ** delta
     probabilities /= probabilities.sum()
+    probabilities = probabilities.astype(np.float32)
     
     new_population = np.empty((num_crossover, n), dtype=np.int32)
     
-    pop_idx_array = np.arange(psize)
+    pop_idx_array = np.arange(psize, dtype=np.int32)
     
     for i in prange(num_crossover):
         
@@ -94,7 +95,7 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
             
         else:
             prob = np.array([0.75, 0.25] if fitness1 < fitness2 else [0.25, 0.75], dtype=np.float32)
-            choice = custom_choice(np.array([parent1[k], parent2[l]]), p=prob)
+            choice = custom_choice(np.array([parent1[k], parent2[l]], dtype=np.int32), p=prob)
             
             offspring[r] = choice
             used_items.add(abs(choice))
