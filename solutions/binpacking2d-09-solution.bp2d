@@ -21,19 +21,19 @@
                 "corner_y": 0
             },
             {
-                "id": 8,
-                "width": 362,
-                "height": 491,
+                "id": 4,
+                "width": 325,
+                "height": 498,
                 "rotated": false,
                 "corner_x": 0,
                 "corner_y": 468
             },
             {
-                "id": 4,
-                "width": 325,
-                "height": 498,
+                "id": 8,
+                "width": 362,
+                "height": 491,
                 "rotated": false,
-                "corner_x": 362,
+                "corner_x": 325,
                 "corner_y": 468
             },
             {

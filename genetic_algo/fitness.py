@@ -55,8 +55,8 @@ def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: 
     # Apply the placement heuristic to get the bins
     solution = lgfi(sequence, bin_width, bin_height, guillotine_cut, rotation)
     # Compute the fitness of this specfic solution (bins)
-    solution_fitness = len(solution) + calculate_bin_fill(solution[-1])
-    return solution_fitness
+    solution_fitness = np.float64(solution.shape[0]) + calculate_bin_fill(solution[-1])
+    return np.float64(solution_fitness)
 
 @njit(float64[:](int32[:, :], from_dtype(Item)[:], UniTuple(int32, 2), boolean, boolean), parallel = True, cache = True)
 def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_dimensions: Tuple[int, int], 
@@ -75,7 +75,7 @@ def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_dimensions:
     - np.ndarray: An array of fitness values for the population.
     """
     
-    population_size = len(population)
+    population_size = population.shape[0]
     
     fitnesses = np.zeros(population_size, dtype=np.float64)
     
