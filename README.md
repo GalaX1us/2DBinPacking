@@ -23,7 +23,7 @@ By considering these variations, we can tackle different scenarios of the 2D Bin
 - **2DBP | R | F**: Items can be rotated, offering flexibility, without needing to follow the guillotine cut property.
 - **2DBP | R | G**: Most complex form where items can be rotated and must follow the guillotine cut property.
 
-## Our Implementation
+## Implementation
 
 We implemented a **Hybrid Genetic Algorithm** proposed in the paper *"A Hybrid Genetic Algorithm for the 2D Guillotine Cutting Problem"* ([original paper](https://www.sciencedirect.com/science/article/pii/S1877050913003980?ref=pdf_download&fr=RR-2&rr=886d22872d9e189c)), to which we added new features to handle rotation and the guillotine cut property, as well as mutations.
 
