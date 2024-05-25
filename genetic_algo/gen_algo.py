@@ -61,7 +61,7 @@ def genetic_algo(items: np.ndarray,
         # Fill the rest with a simple roulette wheel selection based on the deterministic sequence
         population[num_crossover:] = generate_population(items, population_size - num_crossover, kappa)
         
-        # population = mutation(population, mutation_rate)
+        population = mutation(population, mutation_rate)
         
     return best_solution, best_fitness 
     
