@@ -5,6 +5,37 @@
         "height": 250,
         "items": [
             {
+                "id": 2,
+                "width": 114,
+                "height": 118,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 0
+            },
+            {
+                "id": 7,
+                "width": 120,
+                "height": 160,
+                "rotated": false,
+                "corner_x": 114,
+                "corner_y": 0
+            },
+            {
+                "id": 5,
+                "width": 70,
+                "height": 86,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 118
+            }
+        ]
+    },
+    {
+        "id": 1,
+        "width": 250,
+        "height": 250,
+        "items": [
+            {
                 "id": 3,
                 "width": 167,
                 "height": 152,
@@ -27,19 +58,11 @@
                 "rotated": true,
                 "corner_x": 0,
                 "corner_y": 152
-            },
-            {
-                "id": 5,
-                "width": 70,
-                "height": 86,
-                "rotated": false,
-                "corner_x": 141,
-                "corner_y": 152
             }
         ]
     },
     {
-        "id": 1,
+        "id": 2,
         "width": 250,
         "height": 250,
         "items": [
@@ -66,29 +89,6 @@
                 "rotated": true,
                 "corner_x": 0,
                 "corner_y": 184
-            }
-        ]
-    },
-    {
-        "id": 2,
-        "width": 250,
-        "height": 250,
-        "items": [
-            {
-                "id": 7,
-                "width": 120,
-                "height": 160,
-                "rotated": false,
-                "corner_x": 0,
-                "corner_y": 0
-            },
-            {
-                "id": 2,
-                "width": 114,
-                "height": 118,
-                "rotated": false,
-                "corner_x": 120,
-                "corner_y": 0
             }
         ]
     },
