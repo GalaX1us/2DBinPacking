@@ -112,7 +112,7 @@ def get_best_neighbor(neighborhood, tabu_list, items, bin_dimensions, guillotine
             continue
         
         fitness = compute_fitness(items, neighborhood[i]['solution'], bin_dimensions, guillotine_cut, rotation)
-        if fitness > best_fitness:
+        if fitness < best_fitness:
             best_fitness = fitness
             best_neighbor = neighborhood[i]
 
