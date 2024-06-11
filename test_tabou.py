@@ -2,7 +2,7 @@ from genetic_algo.structures import *
 from genetic_algo.solutions_generation import *
 from data_manager import load_items_from_file
 from genetic_algo.fitness import compute_fitness
-
+from random import randint
 
 
 
@@ -143,16 +143,18 @@ def get_neighborhood(solution, tabu_list):
 
 
 def get_best_neighbor(neighborhood, items, bin_dimensions, guillotine_cut, rotation):
-    best_neighbor = None
+    best_neighbor = []
     best_fitness = np.inf
     
     for i in range(len(neighborhood)):
         fitness = compute_fitness(items, neighborhood[i]['solution'], bin_dimensions, guillotine_cut, rotation)
         if fitness < best_fitness:
+            best_neighbor = [neighborhood[i]]
             best_fitness = fitness
-            best_neighbor = neighborhood[i]
+        elif fitness == best_fitness:
+            best_neighbor.append(neighborhood[i])
 
-    return best_neighbor
+    return best_neighbor[randint(0, len(best_neighbor)-1)]
 
 
 
