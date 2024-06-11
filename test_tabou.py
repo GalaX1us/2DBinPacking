@@ -9,7 +9,7 @@ from random import randint
 INPUT_DATA_DIRECTORY = "data"
 OUTPUT_DATA_DIRECTORY = "solutions"
 
-ITERATION_NUMBER = 100
+ITERATION_NUMBER = 1000
 TABU_LIST_SIZE = 10
 
 KAPPA = 5 # Must be >= 1
@@ -184,51 +184,38 @@ def add_tabu_list(tabu_list, tabu):
 
 
 def tabu_search(items, bin_width, bin_height, GUILLOTINE, ROTATION) :
-    
     # créer solution initiale
     solution = np.empty(1, dtype=Neighbor)[0]
     solution['solution'] = generate_population(items, 1, KAPPA)[0]
     best_solution = solution
-    #print("initial_solution :\n",solution['solution'])
-
 
     # calculer la fitness
     fitness = compute_fitness(items, solution['solution'], (bin_width, bin_height), GUILLOTINE, ROTATION)
     best_fitness = fitness
-    #print("fitness :\n",fitness)
     
     # créer liste tabou vide
     tabu_list = np.empty(TABU_LIST_SIZE, dtype=Tabu)
     tabu_list.fill(([-1, -1], -1, [-1, -1]))
     
     
-    for i in range(ITERATION_NUMBER):
-        #print("itération n°",i,"\n-------------------------")
-        
+    for i in range(ITERATION_NUMBER):        
         # créer un voisinage
         neighborhood = get_neighborhood(solution['solution'], tabu_list)
-        #print("neighborhood :\n",neighborhood)
         
         # trouver le meilleur voisin
         solution = get_best_neighbor(neighborhood, items, (bin_width, bin_height), GUILLOTINE, ROTATION)
         old_fitness = fitness
         fitness = compute_fitness(items, solution['solution'], (bin_width, bin_height), GUILLOTINE, ROTATION)
         
-        #print("best_neighbor :\n",solution)
-        #print("fitness :\n",compute_fitness(items, solution['solution'], (bin_width, bin_height), GUILLOTINE, ROTATION))   
-
-        
         # mettre à jour la liste tabou
         if fitness >= old_fitness:
-            tabu_list = add_tabu_list(tabu_list, solution['tabu'])
-            #print("--  tabu_list :\n",tabu_list)
-        
+            tabu_list = add_tabu_list(tabu_list, solution['tabu'])        
         
         # mettre à jour la meilleure solution
         elif fitness < best_fitness:
             best_fitness = fitness
             best_solution = solution['solution']
-            print("--  best_solution :",fitness,"   ",best_solution)
+            print(i,"- best_solution :",fitness,"   ",best_solution)
     
     
     return best_solution, best_fitness
@@ -236,9 +223,7 @@ def tabu_search(items, bin_width, bin_height, GUILLOTINE, ROTATION) :
 
 
 
-
-#/binpacking2d-01.bp2d
-bin_width, bin_height, items = load_items_from_file(INPUT_DATA_DIRECTORY + "/binpacking2d-05.bp2d")
+bin_width, bin_height, items = load_items_from_file(INPUT_DATA_DIRECTORY + "/binpacking2d-01.bp2d")
 
 
 Tabu = np.dtype([
@@ -253,20 +238,7 @@ Neighbor = np.dtype([
 ])
 
 
-
-#print("item :\n",items)
-
-
-# initial_solution = generate_population(items, 1, KAPPA)[0]
-# print("initial_solution :\n",initial_solution)
-# print('----------')
-# tabu_list = np.empty(TABU_LIST_SIZE, dtype=Tabu)
-# tabu_list.fill(([-1, -1], -1, [-1, -1]))
-# print(get_neighborhood(initial_solution, tabu_list))
-
-
-
-a = tabu_search(items, bin_width, bin_height, GUILLOTINE, ROTATION)
+result = tabu_search(items, bin_width, bin_height, GUILLOTINE, ROTATION)
 print("-----------------")
-print(a)
+print(result)
 
