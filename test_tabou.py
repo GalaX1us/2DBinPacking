@@ -9,7 +9,7 @@ from random import randint
 INPUT_DATA_DIRECTORY = "data"
 OUTPUT_DATA_DIRECTORY = "solutions"
 
-ITERATION_NUMBER = 1000
+ITERATION_NUMBER = 100
 TABU_LIST_SIZE = 10
 
 KAPPA = 5 # Must be >= 1
