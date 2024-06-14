@@ -1,6 +1,6 @@
 from typing import Tuple
-from genetic_algo.fitness import compute_fitness
-from genetic_algo.structures import *
+from fitness import compute_fitness
+from structures import *
 from numba import njit, prange
 from genetic_algo.solutions_generation import custom_choice
 

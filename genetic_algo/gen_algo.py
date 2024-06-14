@@ -5,8 +5,8 @@ import tqdm
 from genetic_algo.mutation import *
 from genetic_algo.solutions_generation import *
 from genetic_algo.crossover import *
-from genetic_algo.structures import *
-from genetic_algo.fitness import *
+from structures import *
+from fitness import *
 from genetic_algo.lgfi import *
 
 def genetic_algo(items: np.ndarray,

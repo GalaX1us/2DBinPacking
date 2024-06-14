@@ -1,5 +1,5 @@
 from typing import Tuple
-from genetic_algo.structures import *
+from structures import *
 from numba.typed import List
 
 @njit(from_dtype(Item)[:](from_dtype(Item)[:], int32), cache = True)

@@ -1,4 +1,4 @@
-from genetic_algo.structures import *
+from structures import *
 
 @njit(int32(int32[:], float64[:]), cache = True)
 def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:

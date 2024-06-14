@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit, prange
-from genetic_algo.structures import *
+from structures import *
 
 @njit(void(int32[:]), cache=True)
 def rotate_individual(individual: np.ndarray) -> None:
