@@ -44,9 +44,9 @@ def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: flo
         r += 1
 
         # Move pointers if they are pointing to already used items
-        while k < n and abs(parent1[k]) in used_items:
+        while k < n-1 and abs(parent1[k]) in used_items:
             k += 1
-        while l < n and abs(parent2[l]) in used_items:
+        while l < n-1 and abs(parent2[l]) in used_items:
             l += 1
 
     return offspring
