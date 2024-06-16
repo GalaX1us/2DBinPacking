@@ -39,7 +39,7 @@ At the top of `main.py` you can tweak the parameters.
 
 **Shared Genetic and Tabu Search Parameters**
 
-- `KAPPA`: Controls the degree to which the initial population of solutions favors items based on their area ranking in the deterministic input sequence. Lower values encourage higher diversity among solutions.
+- `KAPPA`: Controls the degree to which the initial population of solutions favors items based on their area ranking. Lower values encourage higher diversity among solutions.
   - Must be $\ge 1$
 
 **General Options**
@@ -115,14 +115,14 @@ When an item is placed within a free rectangle, `the algorithm creates two new f
 
 We Implemented `3 differents methods` to determine the direction of the cut:
 
-Let $ Wr $ and $ Hr $ be the *Width* and *Height* of the free rectangle where the item was placed.
-Let $ Wi $ and $ Hi $ be the *Width* and *Height* of the item.
+Let $Wr$ and $Hr$ denote the *Width* and *Height* of the free rectangle where the item was placed.\
+Let $Wi$ and $Hi$ denote the *Width* and *Height* of the item.
 
-1. **Shorter Leftover** : cut is Horizontal if $ Wr−Wi < Hr−Hi $, and Vertical otherwise.
-2. **Min Area** : cut is Horizontal if $ Hi\times(Wr−Wi ) < Wi\times(Hr−Hi ) $, and Hertical otherwise.
-3. **Custom Hybrid Fit** :
-   Let $N$ be the number of newly created free rectangle where at least one unpacked item can fit ($0$, $1$ or $2$).
-   Let $F$ be the maximum fill percentage achieved by an unpacked item when placed into a free rectangle.
+1. **Shorter Leftover** : cut is Horizontal if $Wr−Wi < Hr−Hi$, and Vertical otherwise.
+2. **Min Area** : cut is Horizontal if $Hi\times(Wr−Wi ) < Wi\times(Hr−Hi )$, and Hertical otherwise.
+3. **Custom Hybrid Fit** :\
+   Let $N$ denote the number of newly created free rectangle where at least one unpacked item can fit ($0$, $1$ or $2$).\
+   Let $F$ denote the maximum fill percentage achieved by an unpacked item when placed into a free rectangle.
    - cut is Horizontal if $N_{horizontal} < N_{vertical}$
    - cut is Vertical if $N_{vertical} < N_{horizontal}$
    - If they are equal :
@@ -135,7 +135,7 @@ We created a custom function to try to converge even faster than the existing me
 
 The fitness function is formulated to address the dual objectives of reducing the number of bins and maximizing the space utilization within the last bin. The fitness $F$ is based on the number of bins $Nbins$ and the average squared wasted space in all bins except the last one. This aims to gradually remove items from the last bin until it is completely emptied.
 
-Let $F_{i}$ be the percentage fill the the $i^{th}$ bin in the solution.
+Let $F_{i}$ denote the percentage fill the the $i^{th}$ bin in the solution.
 
 $$ Fitness = Nbins​ + \left(\frac{1}{Nbins - 1​}\sum_{i = 1}^{Nbins - 1} (1 - F_{i})^{2}\right) $$
 
@@ -159,9 +159,9 @@ We also implemented a classic **Tabu Search Algorithm** with 3 kinds of neighbou
 To further enhance performance, we use **Numba's caching technique**, which **avoids recompilation** at every execution by storing the compiled machine code. This means that the first time a function runs, Numba compiles and caches it, and subsequent executions retrieve the compiled code from the cache, **reducing overhead and improving runtime efficiency**.
 
 **Exemple**:
-We timed the execution of the Genetic Algorithm with 50 items to pack, both with and without Numba optimizations (*CPU : i7-7700K*):
+We timed the execution of the Genetic Algorithm for `binpacking2d-04.bp2d` (50 items) for (only) 100 iterations, both with and without Numba optimizations (*CPU : i7-7700K*):
   - Without Numba : `123.6 seconds`
-  - With Numba : `0.4 seconds` (compilation + `for` loops parallelization)
+  - With Numba : `0.3 seconds` :laughing: (compilation + `for` loops parallelization)
 
 
 ## Results
@@ -198,6 +198,8 @@ For our dataset, here are the results and the theoretical minimal number of bins
 | binpacking2d-11.bp2d | 7      |8      |
 | binpacking2d-12.bp2d | 13     |15     | 
 | binpacking2d-13.bp2d | 2      |2      |
+
+*Note*: The theoretical minimal number of bins serves as a lower bound for reference. Actual results may exceed this bound due to guillotine constraints or the specific shapes of the items being packed.
 
 ## References
 
