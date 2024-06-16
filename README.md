@@ -39,7 +39,7 @@ At the top of `main.py` you can tweak the parameters.
 
 **Shared Genetic and Tabu Search Parameters**
 
-- `KAPPA`: Controls the degree to which the initial population of solutions favors items based on their area ranking in the deterministic input sequence. Lower values encourage higher diversity among solutions.
+- `KAPPA`: Controls the degree to which the initial population of solutions favors items based on their area ranking. Lower values encourage higher diversity among solutions.
   - Must be $\ge 1$
 
 **General Options**
