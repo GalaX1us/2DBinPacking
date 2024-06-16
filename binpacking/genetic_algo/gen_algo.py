@@ -100,7 +100,7 @@ def initialize_numba_functions(advanced=False):
         merge_rec_guillotine: (bin,),  
         handle_wastage: (bin, create_free_rectangle(0, 0, 0, 0), 0, 0),  
         check_fit_and_rotation: (np.zeros(5, dtype=Item), 0, 0, True),  
-        perform_placement: (bin, create_free_rectangle(0, 0, 0, 0), create_item(0, 0, 0), True, 0, 0, True),  
+        perform_placement: (bin, np.zeros(5, dtype=Item), create_free_rectangle(0, 0, 0, 0), create_item(0, 0, 0), True, 0, 0, True, True),  
         insert_item_lgfi: (bin, np.zeros(5, dtype=Item), True, True),  
         find_current_position_idx: (bin,),  
         lgfi: (np.empty(0, dtype=Item), 10, 10, True, True),
