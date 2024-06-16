@@ -252,14 +252,14 @@ The **Tabu Search algorithm is slower** than the Genetic algorithm.
 This can be attributed to the **computational overhead of evaluating the fitness** of all neighbors using LGFI. Specifically, Tabu Search evaluates fitness for 3 times the number of items, whereas the Genetic algorithm evaluates fitness only for each element in its population (20 times in this case).
 
 ### LGFI
-**Hybrid cut improvment :**
+**Hybrid Cut Improvment :**
 We can see that the **hybrid cut method generally performs better** than the shorter leftover and minimum area cutting methods.
 
-**LGFI efficiency :**
+**LGFI Efficiency :**
 Even without optimization, **LGFI performs well**, though it does not always yield the best solution. 
 This can impact our evaluation of metaheuristics because it provides a very **small margin for further optimization**.
 
-### Parameters influence
+### Parameter Influence
 We attempted to tweak the different parameters to assess their impact on algorithm efficiency. However, both algorithms converged quickly to a very good solution, resulting in only slight differences when parameters were changed. The results were inconsistent across different cases in the dataset and between executions.
 
 Therefore, we decided not to conduct a detailed study of parameter impact, as our fitness function and the current dataset do **not allow for a proper comparison of different setups**.
