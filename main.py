@@ -11,19 +11,19 @@ INPUT_DATA_DIRECTORY = "data"
 OUTPUT_DATA_DIRECTORY = "solutions"
 
 # Parameters for Genetic Algorithm
-POPULATION_SIZE = 20
-NB_GENERATIONS = 1000
+POPULATION_SIZE = 10
+NB_GENERATIONS = 2000
 CROSSOVER_RATE = 0.7
 
-MUTATION_RATE = 0.5
+MUTATION_RATE = 0.3
 
 # Parameters for the Unified Tabu Search
 ITERATION_NUMBER = 200
 TABU_LIST_SIZE = 10
 
 # Genetic Parameters
-KAPPA = 5 # Must be >= 1 (For both GA and TABU)
-DELTA = 5 # Must be >= 1 (Only for GA)
+KAPPA = 1 # Must be >= 1 (For both GA and TABU)
+DELTA = 1 # Must be >= 1 (Only for GA)
 
 GUILLOTINE = True
 ROTATION = True
@@ -49,13 +49,13 @@ if __name__ == "__main__":
             
     # =================== Generate One Solutions ==================
     
-    # file = "binpacking2d-11.bp2d" # Just chnage the dataset number to generate another solution
+    file = "binpacking2d-06.bp2d" # Just chnage the dataset number to generate another solution
     
-    # generate_single_solution(file, SELECTED_METAHEURISTIC, ITERATION_NUMBER, TABU_LIST_SIZE, KAPPA, GUILLOTINE, ROTATION,
-    #                          POPULATION_SIZE, NB_GENERATIONS, CROSSOVER_RATE, MUTATION_RATE, DELTA, INPUT_DATA_DIRECTORY, OUTPUT_DATA_DIRECTORY)
+    generate_single_solution(file, SELECTED_METAHEURISTIC, ITERATION_NUMBER, TABU_LIST_SIZE, KAPPA, GUILLOTINE, ROTATION,
+                             POPULATION_SIZE, NB_GENERATIONS, CROSSOVER_RATE, MUTATION_RATE, DELTA, INPUT_DATA_DIRECTORY, OUTPUT_DATA_DIRECTORY)
     
     
     # ====================== Visualize Solutions ======================
     
-    file = "binpacking2d-13-solution.json" # Just chnage the solution number to visualize another solution
+    file = "binpacking2d-06-solution.json" # Just chnage the solution number to visualize another solution
     visualize_solution(file, OUTPUT_DATA_DIRECTORY)
