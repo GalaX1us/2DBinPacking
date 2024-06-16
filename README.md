@@ -115,14 +115,14 @@ When an item is placed within a free rectangle, `the algorithm creates two new f
 
 We Implemented `3 differents methods` to determine the direction of the cut:
 
-Let $ Wr $ and $ Hr $ be the *Width* and *Height* of the free rectangle where the item was placed.
-Let $ Wi $ and $ Hi $ be the *Width* and *Height* of the item.
+Let $Wr$ and $Hr$ denote the *Width* and *Height* of the free rectangle where the item was placed.\
+Let $Wi$ and $Hi$ denote the *Width* and *Height* of the item.
 
-1. **Shorter Leftover** : cut is Horizontal if $ Wr−Wi < Hr−Hi $, and Vertical otherwise.
-2. **Min Area** : cut is Horizontal if $ Hi\times(Wr−Wi ) < Wi\times(Hr−Hi ) $, and Hertical otherwise.
-3. **Custom Hybrid Fit** :
-   Let $N$ be the number of newly created free rectangle where at least one unpacked item can fit ($0$, $1$ or $2$).
-   Let $F$ be the maximum fill percentage achieved by an unpacked item when placed into a free rectangle.
+1. **Shorter Leftover** : cut is Horizontal if $Wr−Wi < Hr−Hi$, and Vertical otherwise.
+2. **Min Area** : cut is Horizontal if $Hi\times(Wr−Wi ) < Wi\times(Hr−Hi )$, and Hertical otherwise.
+3. **Custom Hybrid Fit** :\
+   Let $N$ denote the number of newly created free rectangle where at least one unpacked item can fit ($0$, $1$ or $2$).\
+   Let $F$ denote the maximum fill percentage achieved by an unpacked item when placed into a free rectangle.
    - cut is Horizontal if $N_{horizontal} < N_{vertical}$
    - cut is Vertical if $N_{vertical} < N_{horizontal}$
    - If they are equal :
@@ -135,7 +135,7 @@ We had to create a custom function because the existing methods[^1] did not yiel
 
 The fitness function is formulated to address the dual objectives of reducing the number of bins and maximizing the space utilization within the last bin. The fitness $F$ is based on the number of bins $Nbins$ and the average squared wasted space in all bins except the last one. This aims to gradually remove items from the last bin until it is completely emptied.
 
-Let $F_{i}$ be the percentage fill the the $i^{th}$ bin in the solution.
+Let $F_{i}$ denote the percentage fill the the $i^{th}$ bin in the solution.
 
 $$ Fitness = Nbins​ + \left(\frac{1}{Nbins - 1​}\sum_{i = 1}^{Nbins - 1} (1 - F_{i})^{2}\right) $$
 
