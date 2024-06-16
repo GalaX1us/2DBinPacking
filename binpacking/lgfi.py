@@ -1,6 +1,5 @@
 from typing import Tuple
-from structures import *
-from numba.typed import List
+from binpacking.structures import *
 
 @njit(from_dtype(Item)[:](from_dtype(Item)[:], int32), cache = True)
 def remove_item_from_remaining(remaining: np.ndarray, item_id: int) -> np.ndarray:
@@ -243,8 +242,91 @@ def check_fit_and_rotation(items: np.ndarray, horizontal_gap: int, vertical_gap:
     
     return best_fit_item_idx, best_fit_rotated
 
-@njit(void(from_dtype(Bin), from_dtype(FreeRectangle), from_dtype(Item), boolean, int32, int32, boolean), cache = True)
-def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_item: np.ndarray, best_fit_rotated: bool, 
+@njit(UniTuple(float64, 2)(from_dtype(FreeRectangle)[:], from_dtype(Item)[:], from_dtype(Item), boolean), cache=True)
+def count_items_fit(free_rects, items, best_fit_item, rotation):
+    """
+    Counts the number of remaining items that can fit into the given free rectangles.
+
+    Args:
+        free_rects (list): A list of free rectangles.
+        items (list): A list of items.
+        best_fit_item (dict): The item that is being placed.
+
+    Returns:
+        tuple: 1. The total number of items that can fit in both newly created free rectangles.
+               2. The number of newly created free rectangles in which at least one item fits.
+    """
+    best_fill_pct = 0
+    split_fit = 0
+    for free_rect in free_rects:
+        fit = 0
+        for item in items:
+            if item['width'] != 0 and item['id'] != best_fit_item['id']:
+                if (free_rect['width'] >= item['width'] and free_rect['height'] >= item['height']) or \
+                    (rotation and free_rect['width'] >= item['height'] and free_rect['height'] >= item['width']):
+                    best_fill_pct = max(best_fill_pct, np.float64(free_rect['width'] * free_rect['height']) / np.float64(item['width'] * item['height']))
+                    fit = 1
+        split_fit += fit
+    return best_fill_pct, np.float64(split_fit)
+
+@njit(boolean(from_dtype(FreeRectangle), from_dtype(Item)[:], from_dtype(Item)), cache=True)
+def choose_cut_orientation(current_free_rect, items, best_fit_item):
+    """
+    Chooses the orientation of the cut (horizontal or vertical) based on the number of items 
+    that can fit in the newly created free rectangles.
+
+    Parameters:
+    - current_free_rect (np.ndarray): The current free rectangle to be split.
+    - items (list of np.ndarray): The list of items to be placed.
+    - best_fit_item (np.ndarray): The best fit item to be placed.
+
+    Returns:
+    - bool: True if the horizontal cut is preferred, False otherwise.
+    """
+    new_horizontal_gap = current_free_rect['width'] - best_fit_item['width']
+    new_vertical_gap = current_free_rect['height'] - best_fit_item['height']
+    
+    cf_x, cf_y = current_free_rect['corner_x'], current_free_rect['corner_y']
+    cf_w, cf_h = current_free_rect['width'], current_free_rect['height']
+    bfi_w, bfi_h = best_fit_item['width'], best_fit_item['height']
+    
+    
+    # Correctly create horizontal split rectangles
+    horizontal_split_rects = np.empty(2, dtype=FreeRectangle)
+    horizontal_split_rects[0]['corner_x'] = cf_x
+    horizontal_split_rects[0]['corner_y'] = cf_y + bfi_h
+    horizontal_split_rects[0]['width'] = cf_w
+    horizontal_split_rects[0]['height'] = new_vertical_gap
+    
+    horizontal_split_rects[1]['corner_x'] = cf_x + bfi_w
+    horizontal_split_rects[1]['corner_y'] = cf_y
+    horizontal_split_rects[1]['width'] = new_horizontal_gap
+    horizontal_split_rects[1]['height'] = bfi_h
+    
+    # Correctly create vertical split rectangles
+    vertical_split_rects = np.empty(2, dtype=FreeRectangle)
+    vertical_split_rects[0]['corner_x'] = cf_x + bfi_w
+    vertical_split_rects[0]['corner_y'] = cf_y
+    vertical_split_rects[0]['width'] = new_horizontal_gap
+    vertical_split_rects[0]['height'] = cf_h
+    
+    vertical_split_rects[1]['corner_x'] = cf_x
+    vertical_split_rects[1]['corner_y'] = cf_y + bfi_h
+    vertical_split_rects[1]['width'] = bfi_w
+    vertical_split_rects[1]['height'] = new_vertical_gap
+    
+    horizontal_best_fill_pct, horizontal_split_fit = count_items_fit(horizontal_split_rects, items, best_fit_item, True)
+    vertical_best_fill_pct, vertical_split_fit = count_items_fit(vertical_split_rects, items, best_fit_item, True)
+    
+    if horizontal_split_fit > vertical_split_fit:
+        return True
+    elif horizontal_split_fit < vertical_split_fit:
+        return False
+    else:
+        return horizontal_best_fill_pct > vertical_best_fill_pct
+
+@njit(void(from_dtype(Bin), from_dtype(Item)[:], from_dtype(FreeRectangle), from_dtype(Item), boolean, int32, int32, boolean), cache = True)
+def perform_placement(bin: np.ndarray, items: np.ndarray, current_free_rect: np.ndarray, best_fit_item: np.ndarray, best_fit_rotated: bool, 
                       current_x: int, current_y: int, guillotine_cut: bool) -> None:
     """
     Place the selected item into the bin, performing necessary updates to the free rectangles.
@@ -254,6 +336,7 @@ def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_i
 
     Parameters:
     - bin (np.ndarray): The bin where the item is being placed.
+    - items (np.ndarray): The list of items to be placed. (Including the item to be placed)
     - current_free_rect (np.ndarray): The free rectangle where the item will be placed.
     - best_fit_item (np.ndarray): The item to be placed.
     - best_fit_rotated (bool): Indicates if the item needs to be rotated for placement.
@@ -273,7 +356,13 @@ def perform_placement(bin: np.ndarray, current_free_rect: np.ndarray, best_fit_i
     new_vertical_gap = current_free_rect['height'] - best_fit_item['height']
     
     # Splitting rule: Shorter Leftover
-    guillotine_horizontal = (new_horizontal_gap < new_vertical_gap) if guillotine_cut else False
+    # guillotine_horizontal = (new_horizontal_gap < new_vertical_gap) if guillotine_cut else False
+    
+    # Slitting rule: Min Area
+    # guillotine_horizontal = (new_horizontal_gap * best_fit_item['height'] > new_vertical_gap * best_fit_item['width']) if guillotine_cut else False
+    
+    # Slitting rule: Hybrid Item Fit
+    guillotine_horizontal = choose_cut_orientation(current_free_rect, items, best_fit_item) if guillotine_cut else False
 
     spliting_process_guillotine(guillotine_horizontal, bin, current_free_rect, best_fit_item)
 
@@ -315,7 +404,7 @@ def insert_item_lgfi(bin: np.ndarray, items: np.ndarray, guillotine_cut: bool, r
             
         return -1
     
-    perform_placement(bin, current_free_rect, best_fit_item, best_fit_rotated, 
+    perform_placement(bin, items, current_free_rect, best_fit_item, best_fit_rotated, 
                       current_x, current_y, guillotine_cut)
     
     return best_fit_item_id

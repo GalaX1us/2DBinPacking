@@ -1,7 +1,6 @@
 import json
-from structures import *
+from binpacking.structures import *
 import numpy as np
-from visualization import visualize_bins
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):

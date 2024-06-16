@@ -2,12 +2,12 @@ import time
 from typing import Tuple
 
 import tqdm
-from genetic_algo.mutation import *
-from genetic_algo.solutions_generation import *
-from genetic_algo.crossover import *
-from structures import *
-from fitness import *
-from genetic_algo.lgfi import *
+from binpacking.genetic_algo.mutation import *
+from binpacking.population_generation import *
+from binpacking.genetic_algo.crossover import *
+from binpacking.structures import *
+from binpacking.fitness import *
+from binpacking.lgfi import *
 
 def genetic_algo(items: np.ndarray,
                  bin_dimensions: Tuple[int, int],

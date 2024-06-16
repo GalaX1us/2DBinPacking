@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, int32, boolean, void, from_dtype, float64
+from numba import njit, int32, boolean, void, from_dtype, float64, optional
 from numba.types import UniTuple
 
 MAX_ITEMS = 50
