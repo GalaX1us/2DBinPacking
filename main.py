@@ -1,6 +1,8 @@
-from enum import Enum
-import os
-import time
+from numba import config
+
+# Easy way to disable or Enable JIT Compilation with Numba
+# Useful for performance comparison
+config.DISABLE_JIT = True
 
 from binpacking.data_manager import export_solutions_to_json, import_solution_from_json, load_items_from_file
 from binpacking.genetic_algo.gen_algo import genetic_algo, initialize_numba_functions
