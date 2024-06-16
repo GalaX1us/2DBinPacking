@@ -356,13 +356,13 @@ def perform_placement(bin: np.ndarray, items: np.ndarray, current_free_rect: np.
     new_vertical_gap = current_free_rect['height'] - best_fit_item['height']
     
     # Splitting rule: Shorter Leftover
-    # guillotine_horizontal = (new_horizontal_gap < new_vertical_gap) if guillotine_cut else False
+    guillotine_horizontal = (new_horizontal_gap < new_vertical_gap) if guillotine_cut else False
     
     # Slitting rule: Min Area
     # guillotine_horizontal = (new_horizontal_gap * best_fit_item['height'] > new_vertical_gap * best_fit_item['width']) if guillotine_cut else False
     
     # Slitting rule: Custom Hybrid Fit
-    guillotine_horizontal = choose_cut_orientation(current_free_rect, items, best_fit_item, rotation) if guillotine_cut else False
+    # guillotine_horizontal = choose_cut_orientation(current_free_rect, items, best_fit_item, rotation) if guillotine_cut else False
 
     spliting_process_guillotine(guillotine_horizontal, bin, current_free_rect, best_fit_item)
 
