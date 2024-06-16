@@ -161,7 +161,7 @@ To further enhance performance, we use **Numba's caching technique**, which **av
 **Exemple**:
 We timed the execution of the Genetic Algorithm with 50 items to pack, both with and without Numba optimizations (*CPU : i7-7700K*):
   - Without Numba : `123.6 seconds`
-  - With Numba : `0.4 seconds` (compilation + `for` loops parallelization)
+  - With Numba : `0.4 seconds` :laughing: (compilation + `for` loops parallelization)
 
 
 ## Results
