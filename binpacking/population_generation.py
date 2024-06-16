@@ -1,4 +1,4 @@
-from structures import *
+from binpacking.structures import *
 
 @njit(int32(int32[:], float64[:]), cache = True)
 def custom_choice(indices: np.ndarray, p: np.ndarray) -> int:
@@ -58,7 +58,7 @@ def generate_population(items: np.ndarray, psize: int, kappa: np.float64) -> np.
     population = np.empty((psize, n), dtype=np.int32)
     
     # Calculate vi for each item based on its position in the deterministic sequence
-    vi = np.array([(n - pos)**kappa for pos in range(n)])
+    vi = np.array([np.float64(n - pos)**kappa for pos in range(n)], dtype=np.float64)
     
     for i in range(psize):
         

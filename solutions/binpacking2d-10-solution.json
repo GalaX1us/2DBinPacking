@@ -5,19 +5,19 @@
         "height": 1000,
         "items": [
             {
-                "id": 14,
-                "width": 707,
-                "height": 658,
+                "id": 17,
+                "width": 434,
+                "height": 700,
                 "rotated": false,
                 "corner_x": 0,
                 "corner_y": 0
             },
             {
-                "id": 18,
-                "width": 291,
-                "height": 576,
-                "rotated": true,
-                "corner_x": 707,
+                "id": 12,
+                "width": 456,
+                "height": 586,
+                "rotated": false,
+                "corner_x": 434,
                 "corner_y": 0
             },
             {
@@ -26,7 +26,7 @@
                 "height": 300,
                 "rotated": false,
                 "corner_x": 0,
-                "corner_y": 658
+                "corner_y": 700
             }
         ]
     },
@@ -112,6 +112,14 @@
                 "rotated": true,
                 "corner_x": 639,
                 "corner_y": 0
+            },
+            {
+                "id": 18,
+                "width": 576,
+                "height": 291,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 650
             }
         ]
     },
@@ -121,28 +129,28 @@
         "height": 1000,
         "items": [
             {
-                "id": 10,
-                "width": 693,
-                "height": 345,
+                "id": 4,
+                "width": 642,
+                "height": 464,
                 "rotated": false,
                 "corner_x": 0,
                 "corner_y": 0
             },
             {
-                "id": 12,
-                "width": 456,
-                "height": 586,
-                "rotated": false,
-                "corner_x": 0,
-                "corner_y": 345
+                "id": 10,
+                "width": 345,
+                "height": 693,
+                "rotated": true,
+                "corner_x": 642,
+                "corner_y": 0
             },
             {
-                "id": 4,
-                "width": 464,
-                "height": 642,
-                "rotated": true,
-                "corner_x": 456,
-                "corner_y": 345
+                "id": 7,
+                "width": 506,
+                "height": 482,
+                "rotated": false,
+                "corner_x": 0,
+                "corner_y": 464
             }
         ]
     },
@@ -152,36 +160,36 @@
         "height": 1000,
         "items": [
             {
-                "id": 13,
-                "width": 457,
-                "height": 453,
+                "id": 8,
+                "width": 560,
+                "height": 362,
                 "rotated": false,
                 "corner_x": 0,
                 "corner_y": 0
             },
             {
                 "id": 11,
-                "width": 510,
-                "height": 381,
-                "rotated": true,
-                "corner_x": 457,
+                "width": 381,
+                "height": 510,
+                "rotated": false,
+                "corner_x": 560,
                 "corner_y": 0
             },
             {
-                "id": 7,
-                "width": 506,
-                "height": 482,
-                "rotated": false,
+                "id": 13,
+                "width": 453,
+                "height": 457,
+                "rotated": true,
                 "corner_x": 0,
-                "corner_y": 453
+                "corner_y": 362
             },
             {
                 "id": 3,
-                "width": 463,
-                "height": 369,
-                "rotated": false,
-                "corner_x": 506,
-                "corner_y": 453
+                "width": 369,
+                "height": 463,
+                "rotated": true,
+                "corner_x": 560,
+                "corner_y": 510
             }
         ]
     },
@@ -191,19 +199,11 @@
         "height": 1000,
         "items": [
             {
-                "id": 17,
-                "width": 434,
-                "height": 700,
+                "id": 14,
+                "width": 707,
+                "height": 658,
                 "rotated": false,
                 "corner_x": 0,
-                "corner_y": 0
-            },
-            {
-                "id": 8,
-                "width": 560,
-                "height": 362,
-                "rotated": false,
-                "corner_x": 434,
                 "corner_y": 0
             }
         ]

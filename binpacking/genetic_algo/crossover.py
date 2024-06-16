@@ -1,8 +1,6 @@
-from typing import Tuple
-from fitness import compute_fitness
-from structures import *
+from binpacking.structures import *
 from numba import njit, prange
-from genetic_algo.solutions_generation import custom_choice
+from binpacking.population_generation import custom_choice
 
 @njit(int32[:](int32[:], int32[:], float64, float64), cache = True)
 def offspring_generation(parent1: np.ndarray, parent2: np.ndarray, fitness1: float, fitness2: float) -> np.ndarray:
@@ -106,3 +104,4 @@ def crossover(population: np.ndarray, fitnesses: np.ndarray, crossover_rate: flo
         new_population[i] = offspring
         
     return new_population
+

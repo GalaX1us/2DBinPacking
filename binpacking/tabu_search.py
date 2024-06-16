@@ -1,15 +1,17 @@
+import faulthandler
 import os
-from data_manager import load_items_from_file
-from structures import Tabu, Neighbor
-from genetic_algo.solutions_generation import *
-from fitness import compute_fitness, compute_fitnesses
-from random import randint
-from numba import njit, prange, int32
+from binpacking.data_manager import load_items_from_file
+from binpacking.structures import Tabu, Neighbor
+from binpacking.population_generation import *
+from binpacking.fitness import compute_fitness, compute_fitnesses
+from numba import njit
+
+faulthandler.enable()
 
 MIN_INT32 = np.int32(-2147483647)
 
-@njit
-def create_tabu_list(size):
+@njit(cache = True)
+def  create_tabu_list(size):
     # Initialize the tabu_list with the specified size
     tabu_list = np.empty(size, dtype=Tabu)
     
@@ -150,15 +152,13 @@ def get_neighborhood(solution, tabu_list):
         np.ndarray: The complete neighborhood, combining permutation, rotation, and insertion neighborhoods.
     """
     
-    permutation_neighborhood = get_permutation_neighborhood(solution, tabu_list)
+    # permutation_neighborhood = get_permutation_neighborhood(solution, tabu_list)
     rotation_neighborhood = get_rotation_neighborhood(solution, tabu_list)
     insertion_neighborhood = get_insertion_neighborhood(solution, tabu_list)
+    permutation_neighborhood = get_permutation_neighborhood(solution, tabu_list)
     
     
-    return np.concatenate((
-        permutation_neighborhood, 
-        rotation_neighborhood, 
-        insertion_neighborhood))
+    return np.concatenate((permutation_neighborhood, rotation_neighborhood, insertion_neighborhood))
 
 @njit(cache = True)
 def get_best_neighbor(neighborhood, items, bin_dimensions, guillotine_cut, rotation):
@@ -185,7 +185,6 @@ def get_best_neighbor(neighborhood, items, bin_dimensions, guillotine_cut, rotat
     
     # Compute fitnesses for all neighbors
     fitnesses = compute_fitnesses(solutions_fixed, items, bin_dimensions, guillotine_cut, rotation)
-    
     
     # Find the best fitness value
     best_fitness = np.min(fitnesses)
@@ -257,6 +256,9 @@ def tabu_search(items, bin_dimensions, iteration_number, tabu_list_size, kappa, 
     Returns:
         tuple: Best solution and its fitness value.
     """
+    
+    assert tabu_list_size < 3*len(items), "Tabu list size must be lower than 3 x number of items"
+    
     bin_width, bin_height = bin_dimensions
     
     # Create initial solution
@@ -284,6 +286,7 @@ def tabu_search(items, bin_dimensions, iteration_number, tabu_list_size, kappa, 
     
     for i in range(iteration_number):
         # Create neighborhood
+        print(tabu_list)
         neighborhood = get_neighborhood(solution['solution'][:len_solution], tabu_list)
         # Find best neighbor
         solution = get_best_neighbor(neighborhood, items, (bin_width, bin_height), guillotine_cut, rotation)
@@ -292,7 +295,7 @@ def tabu_search(items, bin_dimensions, iteration_number, tabu_list_size, kappa, 
         
         # Update tabu list
         if fitness >= old_fitness:
-            tabu_list = add_tabu_list(tabu_list, solution['tabu'])        
+            tabu_list = add_tabu_list(tabu_list, solution['tabu'])
         
         # Update best solution
         elif fitness < best_fitness:
@@ -300,18 +303,3 @@ def tabu_search(items, bin_dimensions, iteration_number, tabu_list_size, kappa, 
             best_solution[:] = solution['solution'][:len_solution]
     
     return best_solution, best_fitness
-
-if __name__ == "__main__":
-    
-    full_path = os.path.join("data/binpacking2d-01.bp2d")
-    bin_width, bin_height, items = load_items_from_file(full_path)
-    best_solution, best_fitness = tabu_search(items = items,
-                                        bin_dimensions=(bin_width, bin_height),
-                                        iteration_number=1000,
-                                        tabu_list_size=20,
-                                        kappa=5,
-                                        guillotine_cut=True,
-                                        rotation=True)
-                
-    print(best_solution, best_fitness)
-

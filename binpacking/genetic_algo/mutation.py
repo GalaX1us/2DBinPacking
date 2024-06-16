@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit, prange
-from structures import *
+from binpacking.structures import *
 
 @njit(void(int32[:]), cache=True)
 def rotate_individual(individual: np.ndarray) -> None:

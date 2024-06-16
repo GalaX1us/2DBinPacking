@@ -1,10 +1,10 @@
 from typing import Tuple
-from structures import *
+from binpacking.structures import *
 
 from numba import prange
 
-from genetic_algo.lgfi import lgfi
-from genetic_algo.solutions_generation import get_corresponding_sequence_by_id
+from binpacking.lgfi import lgfi
+from binpacking.population_generation import get_corresponding_sequence_by_id
 
 @njit(float64(from_dtype(Bin)), cache = True)
 def calculate_bin_fill(bin: np.ndarray) -> int:
@@ -55,8 +55,19 @@ def compute_fitness(items: np.ndarray, id_ordering: np.ndarray, bin_dimensions: 
     # Apply the placement heuristic to get the bins
     solution = lgfi(sequence, bin_width, bin_height, guillotine_cut, rotation)
     # Compute the fitness of this specfic solution (bins)
-    solution_fitness = np.float64(solution.shape[0]) + calculate_bin_fill(solution[-1])
-    return np.float64(solution_fitness)
+    # solution_fitness = np.float64(solution.shape[0]) + calculate_bin_fill(solution[-1])
+    # return np.float64(solution_fitness)
+    
+    squared_waste_sum = 0.0
+    # Calculate squared fill ratio for all bins except the last one
+    for i in range(solution.shape[0] - 1):  # Exclude the last bin
+        waste_fill_ratio = 1 - calculate_bin_fill(solution[i])
+        squared_waste_sum += waste_fill_ratio ** 2
+    
+    # Normalize squared_fill_sum to be between 0 and 1
+    squared_fill_ratio = squared_waste_sum / (solution.shape[0] - 1)  # Average squared fill ratio
+    
+    return np.float64(solution.shape[0]) + squared_fill_ratio
 
 @njit(float64[:](int32[:, :], from_dtype(Item)[:], UniTuple(int32, 2), boolean, boolean), parallel = True, cache = True)
 def compute_fitnesses(population: np.ndarray, items: np.ndarray, bin_dimensions: Tuple[int, int], 
