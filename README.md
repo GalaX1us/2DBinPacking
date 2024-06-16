@@ -179,6 +179,7 @@ These examples illustrate how our hybrid genetic algorithm effectively optimizes
 ### Best Results
 
 Considering a set of items and a particular size of bin, if with assume that it is possible to perfectly fit all the items into bins, the minimal number of bin will be :
+
 $$ minimalBinNumber = \left\lceil\frac{\sum itemArea}{binArea}\right\rceil $$
 
 For our dataset, here are the results and the theoretical minimal number of bins according to the formula : 
