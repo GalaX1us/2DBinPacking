@@ -52,9 +52,10 @@ def mutation(population: np.ndarray, mutation_rate: float) -> np.ndarray:
     
     for i in prange(population_size):
         if np.random.random() < mutation_rate:
-            
-            # Perform mutation on this individual
-            rotate_individual(mutated_population[i])
+            if np.random.random() < 0.5:
+                swap_individual(mutated_population[i])
+            else:
+                rotate_individual(mutated_population[i])
 
     return mutated_population
     
