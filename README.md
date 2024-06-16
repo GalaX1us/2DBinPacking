@@ -159,9 +159,9 @@ We also implemented a classic **Tabu Search Algorithm** with 3 kinds of neighbou
 To further enhance performance, we use **Numba's caching technique**, which **avoids recompilation** at every execution by storing the compiled machine code. This means that the first time a function runs, Numba compiles and caches it, and subsequent executions retrieve the compiled code from the cache, **reducing overhead and improving runtime efficiency**.
 
 **Exemple**:
-We timed the execution of the Genetic Algorithm with 50 items to pack, both with and without Numba optimizations (*CPU : i7-7700K*):
+We timed the execution of the Genetic Algorithm for `binpacking2d-04.bp2d` (50 items) for (only) 100 iterations, both with and without Numba optimizations (*CPU : i7-7700K*):
   - Without Numba : `123.6 seconds`
-  - With Numba : `0.4 seconds` :laughing: (compilation + `for` loops parallelization)
+  - With Numba : `0.3 seconds` :laughing: (compilation + `for` loops parallelization)
 
 
 ## Results
