@@ -145,12 +145,16 @@ Both the **Hybrid Evolutionary Algorithm** and the **Tabu Search Algorithm** are
 
 We implemented the **Hybrid Genetic Algorithm** proposed in the paper *"A Hybrid Genetic Algorithm for the 2D Guillotine Cutting Problem"*[^2] ([original paper](https://www.sciencedirect.com/science/article/pii/S1877050913003980?ref=pdf_download&fr=RR-2&rr=886d22872d9e189c)), to which we added new features to handle rotation and the guillotine cut property, as well as mutations.
 
+We implemented two different types of mutations:
+  - **Rotation**: This mutation rotates one element randomly within the sequence.
+  - **Permutation**: This mutation swaps two elements in the sequence.
+
 ### Tabu Search Algorithm
 
 We also implemented a classic **Tabu Search Algorithm** with 3 kinds of neighbourhood :
-- **rotations :** rotate 1 item ($n$ neighbours)
-- **permutations :** swap 2 side-by-side items ($n-1$ neighbours)
-- **insertions :** insert 1 item to the first position and shift the others to the right to fill the gap ($n-1$ neighbours)
+- **Rotations :** rotate 1 item ($n$ neighbours)
+- **Permutations :** swap 2 side-by-side items ($n-1$ neighbours)
+- **Insertions :** insert 1 item to the first position and shift the others to the right to fill the gap ($n-1$ neighbours)
 
 ### Optimizing with Numba
 
