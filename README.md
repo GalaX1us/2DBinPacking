@@ -129,7 +129,7 @@ Let $ Wi $ and $ Hi $ be the *Width* and *Height* of the item.
      - cut is Horizontal if $F_{horizontal} > F_{vertical}$
      - cut is Vertical if $F_{horizontal} \le F_{vertical}$
 
-We had to create a custom function because the existing methods[^1] did not yield satisfactory results. It was evident that in certain bins, the placement could be optimized. The Custom **Hybrid Fit** method was developed to `maximize the use of available space` by considering not only the dimensions of the newly created spaces but also `their ability to accommodate remaining items`, ensuring a more optimal utilization of the bin's total volume.
+We created a custom function to try to converge even faster than the existing methods[^1]. It was evident that in certain cases, the placement could be optimized. The Custom **Hybrid Fit** method was developed to `maximize the use of available space` by considering not only the dimensions of the newly created spaces but also `their ability to accommodate remaining items`, ensuring a more optimal utilization of the bin's total volume.
 
 ### Fitness Function
 
