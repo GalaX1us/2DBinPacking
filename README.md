@@ -199,6 +199,8 @@ For our dataset, here are the results and the theoretical minimal number of bins
 | binpacking2d-12.bp2d | 13     |15     | 
 | binpacking2d-13.bp2d | 2      |2      |
 
+*Note*: The theoretical minimal number of bins serves as a lower bound for reference. Actual results may exceed this bound due to guillotine constraints or the specific shapes of the items being packed.
+
 ## References
 
 [^1]: Enrico Pietrobuoni, "Two-Dimensional Bin Packing Problem with Guillotine Restrictions," 2015, [https://amsdottorato.unibo.it/6810/1/PhD_Pietrobuoni.pdf](https://amsdottorato.unibo.it/6810/1/PhD_Pietrobuoni.pdf).
