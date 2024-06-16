@@ -129,7 +129,7 @@ Let $ Wi $ and $ Hi $ be the *Width* and *Height* of the item.
      - cut is Horizontal if $F_{horizontal} > F_{vertical}$
      - cut is Vertical if $F_{horizontal} \le F_{vertical}$
 
-We had to create a custom function because the existing methods did not yield satisfactory results. It was evident that in certain bins, the placement could be optimized. The Custom **Hybrid Fit** method was developed to `maximize the use of available space` by considering not only the dimensions of the newly created spaces but also `their ability to accommodate remaining items`, ensuring a more optimal utilization of the bin's total volume.
+We had to create a custom function because the existing methods[^1] did not yield satisfactory results. It was evident that in certain bins, the placement could be optimized. The Custom **Hybrid Fit** method was developed to `maximize the use of available space` by considering not only the dimensions of the newly created spaces but also `their ability to accommodate remaining items`, ensuring a more optimal utilization of the bin's total volume.
 
 ### Fitness Function
 
@@ -143,7 +143,7 @@ Both the **Hybrid Evolutionary Algorithm** and the **Tabu Search Algorithm** are
 
 ### Hybrid Genetic Algorithm
 
-We implemented the **Hybrid Genetic Algorithm** proposed in the paper *"A Hybrid Genetic Algorithm for the 2D Guillotine Cutting Problem"* ([original paper](https://www.sciencedirect.com/science/article/pii/S1877050913003980?ref=pdf_download&fr=RR-2&rr=886d22872d9e189c)), to which we added new features to handle rotation and the guillotine cut property, as well as mutations.
+We implemented the **Hybrid Genetic Algorithm** proposed in the paper *"A Hybrid Genetic Algorithm for the 2D Guillotine Cutting Problem"*[^2] ([original paper](https://www.sciencedirect.com/science/article/pii/S1877050913003980?ref=pdf_download&fr=RR-2&rr=886d22872d9e189c)), to which we added new features to handle rotation and the guillotine cut property, as well as mutations.
 
 ### Tabu Search Algorithm
 
@@ -199,4 +199,8 @@ For our dataset, here are the results and the theoretical minimal number of bins
 | binpacking2d-12.bp2d | 13     |15     | 
 | binpacking2d-13.bp2d | 2      |2      |
 
+## References
 
+[^1]: Enrico Pietrobuoni, "Two-Dimensional Bin Packing Problem with Guillotine Restrictions," 2015, [https://amsdottorato.unibo.it/6810/1/PhD_Pietrobuoni.pdf](https://amsdottorato.unibo.it/6810/1/PhD_Pietrobuoni.pdf).
+
+[^2]: Christian Blum, Verena Schmid, "Solving the 2D Bin Packing Problem by Means of a Hybrid Evolutionary Algorithm," [https://doi.org/10.1016/j.procs.2013.05.255](https://doi.org/10.1016/j.procs.2013.05.255).
