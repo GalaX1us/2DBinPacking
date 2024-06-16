@@ -286,7 +286,6 @@ def tabu_search(items, bin_dimensions, iteration_number, tabu_list_size, kappa, 
     
     for i in range(iteration_number):
         # Create neighborhood
-        print(tabu_list)
         neighborhood = get_neighborhood(solution['solution'][:len_solution], tabu_list)
         # Find best neighbor
         solution = get_best_neighbor(neighborhood, items, (bin_width, bin_height), guillotine_cut, rotation)
